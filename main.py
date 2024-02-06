@@ -39,6 +39,8 @@ class Compiler:
                 prev_char_type = define_char_type(prev_char)
                 token = prev_char
                 continue
+            if char_type == 'operation':
+                raise ValueError()
 
             token += char
             prev_char = char
@@ -121,4 +123,4 @@ if __name__ == "__main__":
     compiler.semantic()
     compiler.calculate()
 
-    print(compiler.result)
+    print(compiler.tokens)
