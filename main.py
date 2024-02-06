@@ -100,18 +100,15 @@ class Compiler:
         self.result = result
 
     def _define_token_type(self, token):
-            def is_int(s):
-                try:
-                    int(s)  # Try converting the string to an integer
-                    return True
-                except ValueError:
-                    return False
+        try:
+            int(token)  # Try converting the token to an integer
+            return 'number'
+        except ValueError:
+            pass  # If conversion fails, proceed to check for other types
+        if ' ' in token:
+            return 'space'
+        return 'operation'
 
-            if is_int(token):
-                return 'number'
-            if ' ' in token:
-                return 'space'
-            return 'operation'
 
 if __name__ == "__main__":
     arithmetic_op = sys.argv[1]
