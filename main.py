@@ -123,4 +123,4 @@ if __name__ == "__main__":
     compiler.semantic()
     compiler.calculate()
 
-    print(compiler.tokens)
+    print(compiler.result)
