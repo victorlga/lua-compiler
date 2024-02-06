@@ -7,7 +7,8 @@ class Compiler:
         self.arithmetic_op = arithmetic_op.strip()
         self.len_arith_op = len(self.arithmetic_op)
         self.result = None
-        self._tokens = None
+        self.tokens = None
+        self._len_tokens = None
 
     def lexical(self):
         valid_characters = (' ', '+', '-', '1', '2', '3', '4', '5', '6', '7', '8', '9')
@@ -45,39 +46,26 @@ class Compiler:
 
         tokens += [token]
         self.tokens = tokens
+        self._len_tokens = len(tokens)
 
     def syntactic(self):
 
-        def is_int(s):
-            try:
-                int(s)  # Try converting the string to an integer
-                return True
-            except ValueError:
-                return False
-
-        def define_token_type(token):
-            if is_int(token):
-                return 'number'
-            if ' ' in token:
-                return 'space'
-            return 'operation'
-
         prev_token = self.tokens[0]
-        prev_token_type = define_token_type(prev_token)
+        prev_token_type = self._define_token_type(prev_token)
         if prev_token_type == 'operation':
             raise ValueError()
         num_foll_space = False
 
-        for i in range(1, len(self.tokens)):
+        for i in range(1, self._len_tokens):
             token = self.tokens[i]
-            token_type = define_token_type(token)
+            token_type = self._define_token_type(token)
 
             if token_type == prev_token_type:
                 raise ValueError()
 
             if num_foll_space:
                 if token_type == 'number':
-                    raise ValueError()
+                    raise ValueError()    
 
             num_foll_space = prev_token_type == 'number' and token_type == 'space'
 
@@ -89,6 +77,34 @@ class Compiler:
 
     def semantic(self):
         return
+
+    def calculate(self):
+        result = 0
+        operation = '+'
+        for i in range(0, self._len_tokens):
+            token = self.tokens[i]
+            token_type = self._define_token_type(token)
+            if token_type == 'number':
+                number = int(token) if operation == '+' else -int(token)
+                result += number
+            elif token_type == 'operation':
+                operation = token
+
+        self.result = result
+
+    def _define_token_type(self, token):
+            def is_int(s):
+                try:
+                    int(s)  # Try converting the string to an integer
+                    return True
+                except ValueError:
+                    return False
+
+            if is_int(token):
+                return 'number'
+            if ' ' in token:
+                return 'space'
+            return 'operation'
 
 if __name__ == "__main__":
     arithmetic_op = sys.argv[1]
