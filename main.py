@@ -55,6 +55,7 @@ class Compiler:
         if prev_token_type == 'operation':
             raise ValueError()
         num_foll_space = False
+        op_foll_space = False
 
         for i in range(1, self._len_tokens):
             token = self.tokens[i]
@@ -65,9 +66,13 @@ class Compiler:
 
             if num_foll_space:
                 if token_type == 'number':
+                    raise ValueError()
+            if op_foll_space:
+                if token_type == 'operation':
                     raise ValueError()    
 
             num_foll_space = prev_token_type == 'number' and token_type == 'space'
+            op_foll_space = prev_token_type == 'operation' and token_type == 'space'
 
             prev_token = token
             prev_token_type = token_type
