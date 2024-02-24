@@ -56,12 +56,12 @@ class Parser:
     def run(self, code: str):
         self.tokenizer = Tokenizer(code)
         self.tokenizer.select_next()
-        res = self._parse_expression()
+        result = self._parse_expression()
 
         if self.tokenizer.next.type != 'EOF':
             raise ValueError('Unexpected final token type')
 
-        return res
+        return result
     
     def _parse_expression(self):
         result = 0
