@@ -14,20 +14,14 @@ class Tokenizer:
         self.position: int = 0
         self.next: Token = None
 
-    def end_of_file(self):
-        return self.position >= len(self.source)
-    
-    def define_value(self, fallback=''):
-        return fallback if self.end_of_file() else self.source[self.position]
-
     def select_next(self):
 
-        value = self.define_value()
+        value = self._define_value()
         while value == ' ':
             self.position += 1
-            value = self.define_value()
+            value = self._define_value()
 
-        if self.end_of_file():
+        if self._end_of_file():
             ctype = 'EOF'
         elif value == '-':
             ctype = 'MINUS'
@@ -36,40 +30,81 @@ class Tokenizer:
         elif value.isdigit():
             while value.isdigit():
                 self.position += 1
-                value += self.define_value(fallback=' ')
+                value += self._define_value(fallback=' ')
             value = value[:-1]
             ctype = 'INT'
             self.position -= 1
         else:
-            raise ValueError
+            raise ValueError('Not a valid character: ' + value)
 
         self.position += 1
 
         self.next = Token(ctype, value)
+    
+    def _end_of_file(self):
+        return self.position >= len(self.source)
+    
+    def _define_value(self, fallback=''):
+        return fallback if self._end_of_file() else self.source[self.position]
 
 
 class Parser:
 
     def __init__(self):
         self.tokenizer: Tokenizer = None
-    
-    def parseExpression(self):
-        pass
 
     def run(self, code: str):
-        pass
+        self.tokenizer = Tokenizer(code)
+        self.tokenizer.select_next()
+        res = self._parse_expression()
+
+        if self.tokenizer.next.type != 'EOF':
+            raise ValueError('Unexpected final token type')
+
+        return res
+    
+    def _parse_expression(self):
+        result = 0
+        sign = 1
+
+        # Initial state: expecting a number
+        token = self.tokenizer.next
+        result += sign * self._parse_number(token)
+
+        # State transition: Expecting an operator or end of expression
+        while True:
+            self.tokenizer.select_next()
+            token = self.tokenizer.next
+
+            if token.type == 'EOF':
+                break  # End of expression
+
+            self._expect_operator(token)  # State: expecting operator
+
+            # Apply sign based on operator
+            if token.type == 'PLUS':
+                sign = 1
+            elif token.type == 'MINUS':
+                sign = -1
+
+            # Next expected state: Number
+            self.tokenizer.select_next()
+            token = self.tokenizer.next
+            result += sign * self._parse_number(token)
+
+        return result
+
+    def _parse_number(self, token):
+        if token.type != 'INT':
+            raise ValueError('Expected a number, got: ' + token.type)
+        return int(token.value)
+
+    def _expect_operator(self, token):
+        if token.type not in ['PLUS', 'MINUS']:
+            raise ValueError('Expected an operator, got: ' + token.type)
 
 
 if __name__ == "__main__":
-    # code = sys.argv[1]
-    # parser = Parser()
-    # parser.run(code)
-    src = ''
-    tokenizer = Tokenizer(src)
-
-    tokenizer.select_next()
-    print(tokenizer.next.value)
-    tokenizer.select_next()
-    print(tokenizer.next.value)
-    tokenizer.select_next()
-    print(tokenizer.next.value)
+    code = sys.argv[1]
+    parser = Parser()
+    print(parser.run(code))
