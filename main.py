@@ -16,13 +16,16 @@ class Tokenizer:
 
     def end_of_file(self):
         return self.position >= len(self.source)
+    
+    def define_value(self, fallback=''):
+        return fallback if self.end_of_file() else self.source[self.position]
 
     def select_next(self):
 
-        value = self.source[self.position]
+        value = self.define_value()
         while value == ' ':
             self.position += 1
-            value = '' if self.end_of_file() else self.source[self.position]
+            value = self.define_value()
 
         if self.end_of_file():
             ctype = 'EOF'
@@ -33,7 +36,7 @@ class Tokenizer:
         elif value.isdigit():
             while value.isdigit():
                 self.position += 1
-                value += ' ' if self.end_of_file() else self.source[self.position]
+                value += self.define_value(fallback=' ')
             value = value[:-1]
             ctype = 'INT'
             self.position -= 1
@@ -41,7 +44,7 @@ class Tokenizer:
             raise ValueError
 
         self.position += 1
-        
+
         self.next = Token(ctype, value)
 
 
@@ -58,7 +61,15 @@ class Parser:
 
 
 if __name__ == "__main__":
-    code = sys.argv[1]
-    parser = Parser()
-    parser.run(code)
+    # code = sys.argv[1]
+    # parser = Parser()
+    # parser.run(code)
+    src = ''
+    tokenizer = Tokenizer(src)
 
+    tokenizer.select_next()
+    print(tokenizer.next.value)
+    tokenizer.select_next()
+    print(tokenizer.next.value)
+    tokenizer.select_next()
+    print(tokenizer.next.value)
