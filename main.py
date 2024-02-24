@@ -1,123 +1,64 @@
 import sys
-from dataclasses import dataclass
 
-class Compiler:
+class Token:
 
-    def __init__(self, arithmetic_op):
-        self.arithmetic_op = arithmetic_op.strip()
-        self.len_arith_op = len(self.arithmetic_op)
-        self.result = None
-        self.tokens = None
-        self._len_tokens = None
+    def __init__(self, type:str, value:str):
+        self.type: str = type
+        self.value: str = value
 
-    def lexical(self):
-        valid_characters = (' ', '+', '-', '1', '2', '3', '4', '5', '6', '7', '8', '9')
 
-        for character in self.arithmetic_op:
-            if character not in valid_characters:
-                raise ValueError()
-            
-        def define_char_type(char):
-            if char.isdigit():
-                return 'digit'
-            if char == ' ':
-                return 'space'
-            return 'operation'
+class Tokenizer:
 
-        tokens = []
+    def __init__(self, source:str):
+        self.source: str = source
+        self.position: int = 0
+        self.next: Token = None
 
-        prev_char = self.arithmetic_op[0]
-        prev_char_type = define_char_type(prev_char)
-        token = prev_char
-        for i in range(1, self.len_arith_op):
-            char = self.arithmetic_op[i]
-            char_type = define_char_type(char)
+    def end_of_file(self):
+        return self.position >= len(self.source)
 
-            if char_type != prev_char_type:
-                tokens.append(token)
-                prev_char = char
-                prev_char_type = define_char_type(prev_char)
-                token = prev_char
-                continue
-            if char_type == 'operation':
-                raise ValueError()
+    def select_next(self):
 
-            token += char
-            prev_char = char
-            prev_char_type = define_char_type(prev_char)
+        value = self.source[self.position]
+        while value == ' ':
+            self.position += 1
+            value = '' if self.end_of_file() else self.source[self.position]
 
-        tokens += [token]
-        self.tokens = tokens
-        self._len_tokens = len(tokens)
+        if self.end_of_file():
+            ctype = 'EOF'
+        elif value == '-':
+            ctype = 'MINUS'
+        elif value == '+':
+            ctype = 'PLUS'
+        elif value.isdigit():
+            while value.isdigit():
+                self.position += 1
+                value += ' ' if self.end_of_file() else self.source[self.position]
+            value = value[:-1]
+            ctype = 'INT'
+            self.position -= 1
+        else:
+            raise ValueError
 
-    def syntactic(self):
+        self.position += 1
+        
+        self.next = Token(ctype, value)
 
-        prev_token = self.tokens[0]
-        prev_token_type = self._define_token_type(prev_token)
-        if prev_token_type == 'operation':
-            raise ValueError()
-        num_foll_space = False
-        op_foll_space = False
 
-        for i in range(1, self._len_tokens):
-            token = self.tokens[i]
-            token_type = self._define_token_type(token)
+class Parser:
 
-            if token_type == prev_token_type:
-                raise ValueError()
+    def __init__(self):
+        self.tokenizer: Tokenizer = None
+    
+    def parseExpression(self):
+        pass
 
-            if num_foll_space:
-                if token_type == 'number':
-                    raise ValueError()
-            if op_foll_space:
-                if token_type == 'operation':
-                    raise ValueError()    
-
-            num_foll_space = prev_token_type == 'number' and token_type == 'space'
-            op_foll_space = prev_token_type == 'operation' and token_type == 'space'
-
-            prev_token = token
-            prev_token_type = token_type
-
-        if token_type == 'operation':
-            raise ValueError()
-
-    def semantic(self):
-        return
-
-    def calculate(self):
-        result = 0
-        operation = '+'
-        for i in range(0, self._len_tokens):
-            token = self.tokens[i]
-            token_type = self._define_token_type(token)
-            if token_type == 'number':
-                number = int(token) if operation == '+' else -int(token)
-                result += number
-            elif token_type == 'operation':
-                operation = token
-
-        self.result = result
-
-    def _define_token_type(self, token):
-        try:
-            int(token)  # Try converting the token to an integer
-            return 'number'
-        except ValueError:
-            pass  # If conversion fails, proceed to check for other types
-        if ' ' in token:
-            return 'space'
-        return 'operation'
+    def run(self, code: str):
+        pass
 
 
 if __name__ == "__main__":
-    arithmetic_op = sys.argv[1]
+    code = sys.argv[1]
+    parser = Parser()
+    parser.run(code)
 
-    compiler = Compiler(arithmetic_op)
-
-    compiler.lexical()
-    compiler.syntactic()
-    compiler.semantic()
-    compiler.calculate()
-
-    print(compiler.result)
