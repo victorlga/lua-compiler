@@ -85,6 +85,8 @@ class Parser:
                 result += term
             elif operator_type == 'MINUS':
                 result -= term
+        
+            token = self.tokenizer.next
 
         return result
 
