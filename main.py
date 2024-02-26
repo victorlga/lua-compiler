@@ -27,6 +27,10 @@ class Tokenizer:
             ctype = 'MINUS'
         elif value == '+':
             ctype = 'PLUS'
+        elif value == '*':
+            ctype = 'MULT'
+        elif value == '/':
+            ctype = 'DIV'
         elif value.isdigit():
             while value.isdigit():
                 self.position += 1
@@ -59,38 +63,56 @@ class Parser:
         result = self._parse_expression()
 
         if self.tokenizer.next.type != 'EOF':
-            raise ValueError('Unexpected final token type')
+            raise ValueError('Unexpected final token type: ' + self.tokenizer.next.type)
 
         return result
-    
+
     def _parse_expression(self):
-        result = 0
-        sign = 1
 
-        # Initial state: expecting a number
+        term = self._parse_term()
+
+        result = term
         token = self.tokenizer.next
-        result += sign * self._parse_number(token)
 
-        # State transition: Expecting an operator or end of expression
-        while True:
+        while token.type in ('PLUS', 'MINUS'):
+            operator_type = token.type
             self.tokenizer.select_next()
             token = self.tokenizer.next
 
-            if token.type == 'EOF':
-                break  # End of expression
+            term = self._parse_term()
 
-            self._expect_operator(token)  # State: expecting operator
+            if operator_type == 'PLUS':
+                result += term
+            elif operator_type == 'MINUS':
+                result -= term
 
-            # Apply sign based on operator
-            if token.type == 'PLUS':
-                sign = 1
-            elif token.type == 'MINUS':
-                sign = -1
+        return result
 
-            # Next expected state: Number
+    def _parse_term(self):
+
+        token = self.tokenizer.next
+        result = self._parse_number(token)
+
+        self.tokenizer.select_next()
+        token = self.tokenizer.next
+
+        while token.type in ('MULT', 'DIV'):
+
+            operator_type = token.type
             self.tokenizer.select_next()
             token = self.tokenizer.next
-            result += sign * self._parse_number(token)
+
+            if operator_type == 'DIV':
+                result //= self._parse_number(token)
+            elif operator_type == 'MULT':
+                result *= self._parse_number(token)
+            elif operator_type in ('PLUS', 'MINUS', 'EOF'):
+                break
+            else:
+                raise ValueError('Expected EOF, MULT, DIV, PLUS or MINUS token type, got: ' + token.type)
+
+            self.tokenizer.select_next()
+            token = self.tokenizer.next
 
         return result
 
@@ -98,10 +120,6 @@ class Parser:
         if token.type != 'INT':
             raise ValueError('Expected a number, got: ' + token.type)
         return int(token.value)
-
-    def _expect_operator(self, token):
-        if token.type not in ['PLUS', 'MINUS']:
-            raise ValueError('Expected an operator, got: ' + token.type)
 
 
 if __name__ == "__main__":
