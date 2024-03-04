@@ -115,22 +115,20 @@ class Parser:
 
         if token.type == 'INT':
             result = self._parse_number(token)
+            self.tokenizer.select_next()
         elif token.type == 'PLUS':
             self.tokenizer.select_next()
-            factor = self._parse_factor()
-            result = +factor
+            result = +self._parse_factor()
         elif token.type == 'MINUS':
             self.tokenizer.select_next()
-            factor = self._parse_factor()
-            result = -factor
+            result = -self._parse_factor()
         elif token.type == 'OPAR':
             self.tokenizer.select_next()
             result = self._parse_expression()
             token = self.tokenizer.next
             if token.type != 'CPAR':
                 raise ValueError('Expected CPAR token type, got: ' + token.type)
-
-        self.tokenizer.select_next()
+            self.tokenizer.select_next()
 
         return result
 
