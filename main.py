@@ -23,6 +23,10 @@ class Tokenizer:
 
         if self._end_of_file():
             ctype = 'EOF'
+        elif value == '(':
+            ctype = 'PAREN'
+        elif ctype == ')':
+            ctype = 'PAREN'
         elif value == '-':
             ctype = 'MINUS'
         elif value == '+':
@@ -91,6 +95,29 @@ class Parser:
         return result
 
     def _parse_term(self):
+
+        factor = self._parse_factor()
+
+        result = factor
+        token = self.tokenizer.next
+
+        while token.type in ('MULT', 'DIV'):
+            operator_type = token.type
+            self.tokenizer.select_next()
+            token = self.tokenizer.next
+
+            factor = self._parse_term()
+
+            if operator_type == 'MULT':
+                result *= factor
+            elif operator_type == 'DIV':
+                result /= factor
+
+            token = self.tokenizer.next
+        
+        return result
+
+    def _parse_factor(self):
 
         token = self.tokenizer.next
         result = self._parse_number(token)
