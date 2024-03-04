@@ -24,9 +24,9 @@ class Tokenizer:
         if self._end_of_file():
             ctype = 'EOF'
         elif value == '(':
-            ctype = 'PAREN'
-        elif ctype == ')':
-            ctype = 'PAREN'
+            ctype = 'OPAR'
+        elif value == ')':
+            ctype = 'CPAR'
         elif value == '-':
             ctype = 'MINUS'
         elif value == '+':
@@ -89,7 +89,7 @@ class Parser:
                 result += term
             elif operator_type == 'MINUS':
                 result -= term
-        
+
             token = self.tokenizer.next
 
         return result
@@ -106,12 +106,12 @@ class Parser:
             self.tokenizer.select_next()
             token = self.tokenizer.next
 
-            factor = self._parse_term()
+            factor = self._parse_factor()
 
             if operator_type == 'MULT':
                 result *= factor
             elif operator_type == 'DIV':
-                result /= factor
+                result //= factor
 
             token = self.tokenizer.next
         
@@ -120,28 +120,25 @@ class Parser:
     def _parse_factor(self):
 
         token = self.tokenizer.next
-        result = self._parse_number(token)
+
+        if token.type == 'INT':
+            result = self._parse_number(token)
+        elif token.type == 'PLUS':
+            self.tokenizer.select_next()
+            factor = self._parse_factor()
+            result = +factor
+        elif token.type == 'MINUS':
+            self.tokenizer.select_next()
+            factor = self._parse_factor()
+            result = -factor
+        elif token.type == 'OPAR':
+            self.tokenizer.select_next()
+            result = self._parse_expression()
+            token = self.tokenizer.next
+            if token.type != 'CPAR':
+                raise ValueError('Expected CPAR token type, got: ' + token.type)
 
         self.tokenizer.select_next()
-        token = self.tokenizer.next
-
-        while token.type in ('MULT', 'DIV'):
-
-            operator_type = token.type
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
-
-            if operator_type == 'DIV':
-                result //= self._parse_number(token)
-            elif operator_type == 'MULT':
-                result *= self._parse_number(token)
-            elif operator_type in ('PLUS', 'MINUS', 'EOF'):
-                break
-            else:
-                raise ValueError('Expected EOF, MULT, DIV, PLUS or MINUS token type, got: ' + token.type)
-
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
 
         return result
 
