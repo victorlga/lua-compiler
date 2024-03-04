@@ -73,21 +73,17 @@ class Parser:
 
     def _parse_expression(self):
 
-        term = self._parse_term()
-
-        result = term
+        result = self._parse_term()
         token = self.tokenizer.next
 
         while token.type in ('PLUS', 'MINUS'):
-            operator_type = token.type
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
 
+            self.tokenizer.select_next()
             term = self._parse_term()
 
-            if operator_type == 'PLUS':
+            if token.type == 'PLUS':
                 result += term
-            elif operator_type == 'MINUS':
+            elif token.type == 'MINUS':
                 result -= term
 
             token = self.tokenizer.next
@@ -96,21 +92,17 @@ class Parser:
 
     def _parse_term(self):
 
-        factor = self._parse_factor()
-
-        result = factor
+        result = self._parse_factor()
         token = self.tokenizer.next
 
         while token.type in ('MULT', 'DIV'):
-            operator_type = token.type
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
 
+            self.tokenizer.select_next()
             factor = self._parse_factor()
 
-            if operator_type == 'MULT':
+            if token.type == 'MULT':
                 result *= factor
-            elif operator_type == 'DIV':
+            elif token.type == 'DIV':
                 result //= factor
 
             token = self.tokenizer.next
