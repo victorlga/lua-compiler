@@ -73,7 +73,7 @@ class Parser:
 
     def _parse_expression(self):
 
-        result = self._parse_term()
+        expression = self._parse_term()
         token = self.tokenizer.next
 
         while token.type in ('PLUS', 'MINUS'):
@@ -82,17 +82,17 @@ class Parser:
             term = self._parse_term()
 
             if token.type == 'PLUS':
-                result += term
+                expression += term
             elif token.type == 'MINUS':
-                result -= term
+                expression -= term
 
             token = self.tokenizer.next
 
-        return result
+        return expression
 
     def _parse_term(self):
 
-        result = self._parse_factor()
+        term = self._parse_factor()
         token = self.tokenizer.next
 
         while token.type in ('MULT', 'DIV'):
@@ -101,36 +101,36 @@ class Parser:
             factor = self._parse_factor()
 
             if token.type == 'MULT':
-                result *= factor
+                term *= factor
             elif token.type == 'DIV':
-                result //= factor
+                term //= factor
 
             token = self.tokenizer.next
         
-        return result
+        return term
 
     def _parse_factor(self):
 
         token = self.tokenizer.next
 
         if token.type == 'INT':
-            result = self._parse_number(token)
+            factor = self._parse_number(token)
             self.tokenizer.select_next()
         elif token.type == 'PLUS':
             self.tokenizer.select_next()
-            result = +self._parse_factor()
+            factor = +self._parse_factor()
         elif token.type == 'MINUS':
             self.tokenizer.select_next()
-            result = -self._parse_factor()
+            factor = -self._parse_factor()
         elif token.type == 'OPAR':
             self.tokenizer.select_next()
-            result = self._parse_expression()
+            factor = self._parse_expression()
             token = self.tokenizer.next
             if token.type != 'CPAR':
                 raise ValueError('Expected CPAR token type, got: ' + token.type)
             self.tokenizer.select_next()
 
-        return result
+        return factor
 
     def _parse_number(self, token):
         if token.type != 'INT':
