@@ -81,28 +81,28 @@ class BinOp(Node):
 
     def evaluate(self):
         if self.value == '+':
-            return self.children[0] + self.children[1]
+            return self.children[0].evaluate() + self.children[1].evaluate()
         elif self.value == '-':
-            return self.children[0] - self.children[1]
+            return self.children[0].evaluate() - self.children[1].evaluate()
         elif self.value == '*':
-            return self.children[0] * self.children[1]
+            return self.children[0].evaluate() * self.children[1].evaluate()
         elif self.value == '/':
-            return self.children[0] / self.children[1]
+            return self.children[0].evaluate() / self.children[1].evaluate()
 
 
 class UnOp(Node):
 
     def evaluate(self):
         if self.value == '+':
-            return self.children[0]
+            return self.children[0].evaluate()
         elif self.value == '-':
-            return -self.children[1]
+            return -self.children[1].evaluate()
 
 
 class IntVal(Node):
 
     def evaluate(self):
-        return self.value
+        return int(self.value)
 
 
 class NoOp(Node):
