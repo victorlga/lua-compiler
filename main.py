@@ -104,7 +104,10 @@ class IntVal(Node):
     def evaluate(self):
         return self.value
 
+class NoOp(Node):
 
+    def evaluate(self):
+        pass
     
 
 class Parser:
