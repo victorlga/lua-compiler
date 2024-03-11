@@ -91,6 +91,14 @@ class BinOp(Node):
 
 
 
+class UnOp(Node):
+
+    def evaluate(self):
+        if self.value == '+':
+            return self.children[0]
+        elif self.value == '-':
+            return -self.children[1]
+
 
     
 
