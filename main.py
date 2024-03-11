@@ -27,7 +27,7 @@ class Tokenizer:
     def select_next(self):
 
         value = self._define_value()
-        while value == ' ':
+        while value == ' ' or value == '\n':
             self.position += 1
             value = self._define_value()
 
