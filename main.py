@@ -90,7 +90,6 @@ class BinOp(Node):
             return self.children[0] / self.children[1]
 
 
-
 class UnOp(Node):
 
     def evaluate(self):
@@ -99,34 +98,36 @@ class UnOp(Node):
         elif self.value == '-':
             return -self.children[1]
 
+
 class IntVal(Node):
 
     def evaluate(self):
         return self.value
 
+
 class NoOp(Node):
 
     def evaluate(self):
         pass
-    
+
 
 class Parser:
 
     def __init__(self):
         self.tokenizer: Tokenizer = None
 
-    def run(self, code: str):
+    def run(self, code: str) -> Node:
         code = PrePro.filter(code)
         self.tokenizer = Tokenizer(code)
         self.tokenizer.select_next()
-        result = self._parse_expression()
+        ast = self._parse_expression()
 
         if self.tokenizer.next.type != 'EOF':
             raise ValueError('Unexpected final token type: ' + self.tokenizer.next.type)
 
-        return result
+        return ast
 
-    def _parse_expression(self):
+    def _parse_expression(self) -> Node:
 
         expression = self._parse_term()
         token = self.tokenizer.next
@@ -136,16 +137,14 @@ class Parser:
             self.tokenizer.select_next()
             term = self._parse_term()
 
-            if token.type == 'PLUS':
-                expression += term
-            elif token.type == 'MINUS':
-                expression -= term
+            expression = BinOp(token.value)
+            expression.children.append(term)
 
             token = self.tokenizer.next
 
         return expression
 
-    def _parse_term(self):
+    def _parse_term(self) -> Node:
 
         term = self._parse_factor()
         token = self.tokenizer.next
@@ -155,16 +154,14 @@ class Parser:
             self.tokenizer.select_next()
             factor = self._parse_factor()
 
-            if token.type == 'MULT':
-                term *= factor
-            elif token.type == 'DIV':
-                term //= factor
+            term = BinOp(token.value)
+            term.children.append(factor)
 
             token = self.tokenizer.next
         
         return term
 
-    def _parse_factor(self):
+    def _parse_factor(self) -> Node:
 
         token = self.tokenizer.next
 
@@ -188,7 +185,7 @@ class Parser:
         return factor
 
     @staticmethod
-    def _parse_number(token):
+    def _parse_number(token) -> Node:
         if token.type != 'INT':
             raise ValueError('Expected a number, got: ' + token.type)
         return int(token.value)
