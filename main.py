@@ -132,7 +132,8 @@ class Parser:
 
         return factor
 
-    def _parse_number(self, token):
+    @staticmethod
+    def _parse_number(token):
         if token.type != 'INT':
             raise ValueError('Expected a number, got: ' + token.type)
         return int(token.value)
