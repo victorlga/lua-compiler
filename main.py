@@ -197,6 +197,10 @@ class Parser:
 
 
 if __name__ == "__main__":
-    code = sys.argv[1]
+    file_name = sys.argv[1]
+
+    with open(file_name, 'r') as file:
+        code = file.read()
+
     parser = Parser()
-    print(parser.run(code).children[0].value)
+    print(parser.run(code).evaluate())
