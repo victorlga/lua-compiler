@@ -76,6 +76,22 @@ class Node(ABC):
     def evaluate():
         pass
 
+
+class BinOp(Node):
+
+    def evaluate(self):
+        if self.value == '+':
+            return self.children[0] + self.children[1]
+        elif self.value == '-':
+            return self.children[0] - self.children[1]
+        elif self.value == '*':
+            return self.children[0] * self.children[1]
+        elif self.value == '/':
+            return self.children[0] / self.children[1]
+
+
+
+
     
 
 class Parser:
