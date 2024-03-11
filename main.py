@@ -87,7 +87,7 @@ class BinOp(Node):
         elif self.value == '*':
             return self.children[0].evaluate() * self.children[1].evaluate()
         elif self.value == '/':
-            return self.children[0].evaluate() / self.children[1].evaluate()
+            return self.children[0].evaluate() // self.children[1].evaluate()
 
 
 class UnOp(Node):
