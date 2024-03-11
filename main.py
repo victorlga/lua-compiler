@@ -127,36 +127,43 @@ class Parser:
 
     def _parse_expression(self) -> Node:
 
-        expression = self._parse_term()
+        term = self._parse_term()
+        expression = term
         token = self.tokenizer.next
 
         while token.type in ('PLUS', 'MINUS'):
 
+            binop = BinOp(token.value)
+            binop.children.append(expression)
+
             self.tokenizer.select_next()
             term = self._parse_term()
-
-            expression = BinOp(token.value)
-            expression.children.append(term)
+            binop.children.append(term)
 
             token = self.tokenizer.next
+            expression = binop
 
         return expression
 
     def _parse_term(self) -> Node:
 
-        term = self._parse_factor()
+        factor = self._parse_factor()
+        term = factor
         token = self.tokenizer.next
 
         while token.type in ('MULT', 'DIV'):
 
+            binop = BinOp(token.value)
+            binop.children.append(term)
+
             self.tokenizer.select_next()
             factor = self._parse_factor()
+            binop.children.append(factor)
 
-            term = BinOp(token.value)
-            term.children.append(factor)
 
             token = self.tokenizer.next
-        
+            term = binop
+
         return term
 
     def _parse_factor(self) -> Node:
@@ -192,4 +199,4 @@ class Parser:
 if __name__ == "__main__":
     code = sys.argv[1]
     parser = Parser()
-    print(parser.run(code))
+    print(parser.run(code).children[0].value)
