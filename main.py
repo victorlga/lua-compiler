@@ -96,7 +96,7 @@ class UnOp(Node):
         if self.value == '+':
             return self.children[0].evaluate()
         elif self.value == '-':
-            return -self.children[1].evaluate()
+            return -self.children[0].evaluate()
 
 
 class IntVal(Node):
