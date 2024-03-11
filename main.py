@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import sys
 import re
 
@@ -64,6 +65,18 @@ class Tokenizer:
     def _define_value(self, fallback=''):
         return fallback if self._end_of_file() else self.source[self.position]
 
+
+class Node(ABC):
+
+    def __init__(self, value=None):
+        self.value = value
+        self.children = []
+
+    @abstractmethod
+    def evaluate():
+        pass
+
+    
 
 class Parser:
 
