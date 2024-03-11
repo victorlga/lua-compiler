@@ -1,4 +1,13 @@
 import sys
+import re
+
+class PrePro:
+
+    @staticmethod
+    def filter(code):
+        pattern = r'--.*'
+        return re.sub(pattern, '', code)
+
 
 class Token:
 
@@ -62,6 +71,7 @@ class Parser:
         self.tokenizer: Tokenizer = None
 
     def run(self, code: str):
+        code = PrePro.filter(code)
         self.tokenizer = Tokenizer(code)
         self.tokenizer.select_next()
         result = self._parse_expression()
