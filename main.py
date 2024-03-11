@@ -99,6 +99,11 @@ class UnOp(Node):
         elif self.value == '-':
             return -self.children[1]
 
+class IntVal(Node):
+
+    def evaluate(self):
+        return self.value
+
 
     
 
