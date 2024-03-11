@@ -106,9 +106,7 @@ class IntVal(Node):
 
 
 class NoOp(Node):
-
-    def evaluate(self):
-        pass
+    pass
 
 
 class Parser:
@@ -168,27 +166,27 @@ class Parser:
         if token.type == 'INT':
             factor = self._parse_number(token)
             self.tokenizer.select_next()
-        elif token.type == 'PLUS':
+            return factor
+        elif token.type in ('PLUS', 'MINUS'):
             self.tokenizer.select_next()
-            factor = +self._parse_factor()
-        elif token.type == 'MINUS':
-            self.tokenizer.select_next()
-            factor = -self._parse_factor()
+            factor = self._parse_factor()
+            unop = UnOp(token.value)
+            unop.children.append(factor)
+            return unop
         elif token.type == 'OPAR':
             self.tokenizer.select_next()
-            factor = self._parse_expression()
+            expression = self._parse_expression()
             token = self.tokenizer.next
             if token.type != 'CPAR':
                 raise ValueError('Expected CPAR token type, got: ' + token.type)
             self.tokenizer.select_next()
-
-        return factor
+            return expression
 
     @staticmethod
     def _parse_number(token) -> Node:
         if token.type != 'INT':
             raise ValueError('Expected a number, got: ' + token.type)
-        return int(token.value)
+        return IntVal(token.value)
 
 
 if __name__ == "__main__":
