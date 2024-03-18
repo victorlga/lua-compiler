@@ -13,31 +13,31 @@ class Node(ABC):
     def evaluate():
         pass
 
-class Identifier(Node):
+class IdentifierNode(Node):
 
     def evaluate(self, symbol_table):
         return symbol_table.get(self.value)
 
-class Print(Node):
+class PrintNode(Node):
 
     def evaluate(self, symbol_table):
         value = str(self.children[0].evaluate(symbol_table))
         sys.stdout.write(value)
 
-class Assigment(Node):
+class AssigmentNode(Node):
 
     def evaluate(self, symbol_table):
         key = self.children[0].evaluate(symbol_table)
         value = self.children[1].evaluate(symbol_table)
         symbol_table.set(key, value)
 
-class Block(Node):
+class BlockNode(Node):
 
     def evaluate(self, symbol_table):
         for child in self.children:
             child.evaluate(symbol_table)
 
-class BinOp(Node):
+class BinOpNode(Node):
 
     def evaluate(self, symbol_table):
         if self.value == '+':
@@ -49,7 +49,7 @@ class BinOp(Node):
         elif self.value == '/':
             return self.children[0].evaluate(symbol_table) // self.children[1].evaluate(symbol_table)
 
-class UnOp(Node):
+class UnOpNode(Node):
 
     def evaluate(self, symbol_table):
         if self.value == '+':
@@ -57,10 +57,10 @@ class UnOp(Node):
         elif self.value == '-':
             return -self.children[0].evaluate(symbol_table)
 
-class IntVal(Node):
+class IntValNode(Node):
 
     def evaluate(self, symbol_table):
         return int(self.value)
 
-class NoOp(Node):
+class NoOpNode(Node):
     pass

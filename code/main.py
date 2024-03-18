@@ -2,7 +2,8 @@ import sys
 import re
 
 from token import Tokenizer
-from node import BinOp, IntVal, UnOp, PrintNode, AssigmentNode, BlockNode, IdentifierNode, NoOp
+from node import (BinOpNode, IntValNode, UnOpNode, PrintNode,
+                  AssigmentNode, BlockNode, IdentifierNode, NoOpNode)
 from table import SymbolTable
 
 class PreProcessing:
@@ -28,13 +29,13 @@ class Parser:
     def _parse_block(self):
 
         block_node = BlockNode()
-        
+
         while self.tokenizer.next.type != 'EOF':
 
             self.tokenizer.select_next()
             statement = self._parse_statement()
             block_node.children.append(statement)
-        
+
         return block_node
 
     def _parse_statement(self):
@@ -81,7 +82,7 @@ class Parser:
         if token.type != 'NEWLINE':
             raise ValueError('Expected NEWLINE token type, got: ' + token.type)
 
-        return NoOp()
+        return NoOpNode()
 
 
     def _parse_expression(self):
@@ -92,7 +93,7 @@ class Parser:
 
         while token.type in ('PLUS', 'MINUS'):
 
-            binop = BinOp(token.value)
+            binop = BinOpNode(token.value)
             binop.children.append(expression)
 
             self.tokenizer.select_next()
@@ -112,13 +113,12 @@ class Parser:
 
         while token.type in ('MULT', 'DIV'):
 
-            binop = BinOp(token.value)
+            binop = BinOpNode(token.value)
             binop.children.append(term)
 
             self.tokenizer.select_next()
             factor = self._parse_factor()
             binop.children.append(factor)
-
 
             token = self.tokenizer.next
             term = binop
@@ -130,13 +130,13 @@ class Parser:
         token = self.tokenizer.next
 
         if token.type == 'INT':
-            factor = IntVal(token.value)
+            factor = IntValNode(token.value)
             self.tokenizer.select_next()
             return factor
         elif token.type in ('PLUS', 'MINUS'):
             self.tokenizer.select_next()
             factor = self._parse_factor()
-            unop = UnOp(token.value)
+            unop = UnOpNode(token.value)
             unop.children.append(factor)
             return unop
         elif token.type == 'OPEN_PAR':
