@@ -30,15 +30,16 @@ class IdentifierNode(Node):
 class PrintNode(Node):
 
     def evaluate(self, symbol_table):
-        value = str(self.children[0].evaluate(symbol_table))
+        value = str(self.children[0].evaluate(symbol_table)) + '\n'
         sys.stdout.write(value)
 
 class AssigmentNode(Node):
 
     def evaluate(self, symbol_table):
-        key = self.children[0].evaluate(symbol_table)
         value = self.children[1].evaluate(symbol_table)
+        key = self.children[0].value
         symbol_table.set(key, value)
+        self.children[0].evaluate(symbol_table)
 
 class BlockNode(Node):
 
@@ -72,4 +73,6 @@ class IntValNode(Node):
         return int(self.value)
 
 class NoOpNode(Node):
-    pass
+    
+    def evaluate(self, symbol_table):
+        pass
