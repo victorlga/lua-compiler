@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
 import sys
 import re
+
+from node import Node, BinOp, UnOp, IntVal
 
 class PrePro:
 
@@ -64,49 +65,6 @@ class Tokenizer:
     
     def _define_value(self, fallback=''):
         return fallback if self._end_of_file() else self.source[self.position]
-
-
-class Node(ABC):
-
-    def __init__(self, value=None):
-        self.value = value
-        self.children = []
-
-    @abstractmethod
-    def evaluate():
-        pass
-
-
-class BinOp(Node):
-
-    def evaluate(self):
-        if self.value == '+':
-            return self.children[0].evaluate() + self.children[1].evaluate()
-        elif self.value == '-':
-            return self.children[0].evaluate() - self.children[1].evaluate()
-        elif self.value == '*':
-            return self.children[0].evaluate() * self.children[1].evaluate()
-        elif self.value == '/':
-            return self.children[0].evaluate() // self.children[1].evaluate()
-
-
-class UnOp(Node):
-
-    def evaluate(self):
-        if self.value == '+':
-            return self.children[0].evaluate()
-        elif self.value == '-':
-            return -self.children[0].evaluate()
-
-
-class IntVal(Node):
-
-    def evaluate(self):
-        return int(self.value)
-
-
-class NoOp(Node):
-    pass
 
 
 class Parser:
