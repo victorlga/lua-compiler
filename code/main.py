@@ -12,4 +12,4 @@ if __name__ == "__main__":
 
     parser = Parser()
     symbol_table = SymbolTable()
-    print(parser.run(code).evaluate(symbol_table))
+    parser.run(code).evaluate(symbol_table)
