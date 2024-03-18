@@ -1,10 +1,10 @@
 class SymbolTable:
 
     def __init__(self):
-        self.dict = {}
+        self.table = {}
 
-    def getter(self, key):
-        return self.dict[key]
+    def get(self, key):
+        return self.table[key]
 
-    def setter(self, key, value):
-        self.dict[key] = value
+    def set(self, key, value):
+        self.table[key] = value
