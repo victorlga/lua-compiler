@@ -46,8 +46,8 @@ class Tokenizer:
             value = value[:-1]
             ctype = 'INT'
             self.position -= 1
-        elif value.isalpha():
-            while value.isalpha() or value.isdigit():
+        elif value.isalpha() or value == '_':
+            while value.isalpha() or value.isdigit() or value == '_':
                 self.position += 1
                 value += self._define_value(fallback=' ')
             value = value[:-1]
