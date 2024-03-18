@@ -17,12 +17,14 @@ class Tokenizer:
     def select_next(self):
 
         value = self._define_value()
-        while value == ' ' or value == '\n':
+        while value == ' ':
             self.position += 1
             value = self._define_value()
 
         if self._end_of_file():
             ctype = 'EOF'
+        elif value == '\n':
+            ctype == 'NEWLINE'
         elif value == '(':
             ctype = 'OPEN_PAR'
         elif value == ')':
