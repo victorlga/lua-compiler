@@ -1,3 +1,5 @@
+import re
+
 class Token:
 
     def __init__(self, type:str, value:str):
@@ -47,10 +49,10 @@ class Tokenizer:
             ctype = 'INT'
             self.position -= 1
         elif value.isalpha() or value == '_':
-            while value.isalpha() or value.isdigit() or value == '_':
+            while self._is_valid_variable(value):
                 self.position += 1
                 value += self._define_value(fallback=' ')
-            value = value[:-1]
+            value = value[:-2] if '\n' in value else value[:-1]
             self.position -= 1
             is_reserved_word = value in self.reserved_words_types.keys()
             ctype = self.reserved_words_types[value] if is_reserved_word else 'IDENTIFIER'
@@ -66,3 +68,8 @@ class Tokenizer:
     
     def _define_value(self, fallback=''):
         return fallback if self._end_of_file() else self.source[self.position]
+
+    @staticmethod
+    def _is_valid_variable(value):
+        pattern = r'^[a-zA-Z0-9_]+$'
+        return bool(re.match(pattern, value))
