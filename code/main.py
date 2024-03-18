@@ -23,13 +23,19 @@ class Parser:
         self.tokenizer.select_next()
         ast_root = self._parse_expression()
 
-        if self.tokenizer.next.type != 'EOF':
-            raise ValueError('Unexpected final token type: ' + self.tokenizer.next.type)
-
         return ast_root
     
     def _parse_block(self):
-        pass
+
+        block_node = BlockNode()
+        
+        while self.tokenizer.next.type != 'EOF':
+
+            self.tokenizer.select_next()
+            statement = self._parse_statement()
+            block_node.children.append(statement)
+        
+        return block_node
 
     def _parse_statement(self):
         
