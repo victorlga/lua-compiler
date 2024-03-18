@@ -1,5 +1,5 @@
 from lexical import Tokenizer
-from preprocessing import PreProcessing
+from preprocessing import filter
 from semantic import (
     BinOpNode, IntValNode, UnOpNode, PrintNode, AssigmentNode, BlockNode,
     IdentifierNode, NoOpNode
@@ -11,12 +11,10 @@ class Parser:
         self.tokenizer = None
 
     def run(self, raw_source):
-        source = PreProcessing.filter(raw_source)
-        print(source)
+        source = filter(raw_source)
         self.tokenizer = Tokenizer(source)
         self.tokenizer.select_next()
         ast_root = self._parse_block()
-
         return ast_root
     
     def _parse_block(self):
@@ -24,21 +22,21 @@ class Parser:
         block_node = BlockNode()
 
         while self.tokenizer.next.type != 'EOF':
-
-            self.tokenizer.select_next()
             statement = self._parse_statement()
             block_node.children.append(statement)
+            self.tokenizer.select_next()
 
         return block_node
 
     def _parse_statement(self):
-        
+
         token = self.tokenizer.next
 
         if token.type == 'IDENTIFIER':
             identifier_node = IdentifierNode(token.value)
 
             self.tokenizer.select_next()
+            token = self.tokenizer.next
             if token.type != 'EQ':
                 raise ValueError('Expected EQ token type, got: ' + token.type)
             assigment_node = AssigmentNode()
@@ -48,7 +46,7 @@ class Parser:
             expression = self._parse_expression()
             assigment_node.children.append(expression)
 
-            self.tokenizer.select_next()
+            token = self.tokenizer.next
             if token.type != 'NEWLINE':
                 raise ValueError('Expected NEWLINE token type, got: ' + token.type)
 
@@ -58,20 +56,26 @@ class Parser:
             print_node = PrintNode()
 
             self.tokenizer.select_next()
+            token = self.tokenizer.next
+            if token.type != 'OPEN_PAR':
+                raise ValueError('Expected OPEN_PAR token type, got: ' + token.type)
+
+            self.tokenizer.select_next()
             expression = self._parse_expression()
             print_node.children.append(expression)
 
             token = self.tokenizer.next
             if token.type != 'CLOSE_PAR':
                 raise ValueError('Expected CLOSE_PAR token type, got: ' + token.type)
-
             self.tokenizer.select_next()
+
+            token = self.tokenizer.next
             if token.type != 'NEWLINE':
                 raise ValueError('Expected NEWLINE token type, got: ' + token.type)
 
             return print_node
 
-        self.tokenizer.select_next()
+        token = self.tokenizer.next
         if token.type != 'NEWLINE':
             raise ValueError('Expected NEWLINE token type, got: ' + token.type)
 
@@ -122,10 +126,12 @@ class Parser:
 
         token = self.tokenizer.next
 
-        if token.type == 'INT':
-            factor = IntValNode(token.value)
+        if token.type == 'IDENTIFIER':
             self.tokenizer.select_next()
-            return factor
+            return IdentifierNode(token.value)
+        elif token.type == 'INT':
+            self.tokenizer.select_next()
+            return IntValNode(token.value)
         elif token.type in ('PLUS', 'MINUS'):
             self.tokenizer.select_next()
             factor = self._parse_factor()
