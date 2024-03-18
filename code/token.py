@@ -24,9 +24,9 @@ class Tokenizer:
         if self._end_of_file():
             ctype = 'EOF'
         elif value == '(':
-            ctype = 'OPAR'
+            ctype = 'OPEN_PAR'
         elif value == ')':
-            ctype = 'CPAR'
+            ctype = 'CLOSE_PAR'
         elif value == '-':
             ctype = 'MINUS'
         elif value == '+':
@@ -51,7 +51,7 @@ class Tokenizer:
             value = value[:-1]
             self.position -= 1
             is_reserved_word = value in self.reserved_words_types.keys()
-            ctype = self.reserved_words_types[value] if is_reserved_word else 'IDEN'
+            ctype = self.reserved_words_types[value] if is_reserved_word else 'IDENTIFIER'
         else:
             raise ValueError('Not a valid character: ' + value)
 
