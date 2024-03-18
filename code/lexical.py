@@ -24,7 +24,7 @@ class Tokenizer:
         if self._end_of_file():
             ctype = 'EOF'
         elif value == '\n':
-            ctype == 'NEWLINE'
+            ctype = 'NEWLINE'
         elif value == '(':
             ctype = 'OPEN_PAR'
         elif value == ')':
