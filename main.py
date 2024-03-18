@@ -129,7 +129,7 @@ class Parser:
         token = self.tokenizer.next
 
         if token.type == 'INT':
-            factor = self._parse_number(token)
+            factor = IntVal(token.value)
             self.tokenizer.select_next()
             return factor
         elif token.type in ('PLUS', 'MINUS'):
@@ -146,12 +146,6 @@ class Parser:
                 raise ValueError('Expected CPAR token type, got: ' + token.type)
             self.tokenizer.select_next()
             return expression
-
-    @staticmethod
-    def _parse_number(token) -> Node:
-        if token.type != 'INT':
-            raise ValueError('Expected a number, got: ' + token.type)
-        return IntVal(token.value)
 
 
 if __name__ == "__main__":
