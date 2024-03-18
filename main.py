@@ -1,7 +1,7 @@
 import sys
 import re
+from abc import ABC, abstractmethod
 
-from node import Node, BinOp, UnOp, IntVal
 
 class PrePro:
 
@@ -10,13 +10,60 @@ class PrePro:
         pattern = r'--.*'
         return re.sub(pattern, '', code)
 
+class SymbolTable:
+
+    def __init__(self):
+        self.dict = {}
+
+    def getter(self, key):
+        return self.dict[key]
+
+    def setter(self, key, value):
+        self.dict[key] = value
+
+class Node(ABC):
+
+    def __init__(self, value=None):
+        self.value = value
+        self.children = []
+
+    @abstractmethod
+    def evaluate():
+        pass
+
+class BinOp(Node):
+
+    def evaluate(self, symbol_table: SymbolTable):
+        if self.value == '+':
+            return self.children[0].evaluate(symbol_table) + self.children[1].evaluate(symbol_table)
+        elif self.value == '-':
+            return self.children[0].evaluate(symbol_table) - self.children[1].evaluate(symbol_table)
+        elif self.value == '*':
+            return self.children[0].evaluate(symbol_table) * self.children[1].evaluate(symbol_table)
+        elif self.value == '/':
+            return self.children[0].evaluate(symbol_table) // self.children[1].evaluate(symbol_table)
+
+class UnOp(Node):
+
+    def evaluate(self, symbol_table: SymbolTable):
+        if self.value == '+':
+            return self.children[0].evaluate(symbol_table)
+        elif self.value == '-':
+            return -self.children[0].evaluate(symbol_table)
+
+class IntVal(Node):
+
+    def evaluate(self, symbol_table: SymbolTable):
+        return int(self.value)
+
+class NoOp(Node):
+    pass
 
 class Token:
 
     def __init__(self, type:str, value:str):
         self.type: str = type
         self.value: str = value
-
 
 class Tokenizer:
 
@@ -65,7 +112,6 @@ class Tokenizer:
     
     def _define_value(self, fallback=''):
         return fallback if self._end_of_file() else self.source[self.position]
-
 
 class Parser:
 
@@ -155,4 +201,5 @@ if __name__ == "__main__":
         code = file.read()
 
     parser = Parser()
-    print(parser.run(code).evaluate())
+    symbol_table = SymbolTable()
+    print(parser.run(code).evaluate(symbol_table))
