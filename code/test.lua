@@ -1,2 +1,7 @@
+print(5)
+print(5+2) ----avdkjdsvv
 
-3+6/3   *  2 -+-  +  2*4/2 + 0/1 -((6+ ((4)))/(2)) -- Teste -- Teste 2
+x = 5
+print(x*(4+1)) --- testaa
+
+--sdfbsdb
