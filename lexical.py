@@ -52,7 +52,7 @@ class Tokenizer:
             while self._is_valid_variable(value):
                 self.position += 1
                 value += self._define_value(fallback=' ')
-            value = value[:-2] if '\n' in value else value[:-1]
+            value = value[:-1]
             self.position -= 1
             is_reserved_word = value in self.reserved_words_types.keys()
             ctype = self.reserved_words_types[value] if is_reserved_word else 'IDENTIFIER'
@@ -72,4 +72,4 @@ class Tokenizer:
     @staticmethod
     def _is_valid_variable(value):
         pattern = r'^[a-zA-Z0-9_]+$'
-        return bool(re.match(pattern, value))
+        return bool(re.match(pattern, repr(value)[1:-1]))
