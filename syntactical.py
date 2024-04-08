@@ -2,7 +2,7 @@ from lexical import Tokenizer
 from preprocessing import filter
 from semantic import (
     BinOpNode, IntValNode, UnOpNode, PrintNode, AssigmentNode, BlockNode,
-    IdentifierNode, NoOpNode
+    IdentifierNode, NoOpNode, ReadNode, IfNode, WhileNode
 )
 
 class Parser:
@@ -198,9 +198,21 @@ class Parser:
             return unop
         elif token.type == 'OPEN_PAR':
             self.tokenizer.select_next()
-            expression = self._parse_expression()
+            expression = self._parse_bool_expression()
             token = self.tokenizer.next
             if token.type != 'CLOSE_PAR':
                 raise ValueError('Expected CLOSE_PAR token type, got: ' + token.type)
             self.tokenizer.select_next()
             return expression
+        elif token.type == 'READ':
+            self.tokenizer.select_next()
+            token = self.tokenizer.next
+            if token.type != 'OPEN_PAR':
+                raise ValueError('Expected OPEN_PAR token type, got: ' + token.type)
+            self.tokenizer.select_next()
+            token = self.tokenizer.next
+            if token.type != 'CLOSE_PAR':
+                raise ValueError('Expected CLOSE_PAR token type, got: ' + token.type)
+            self.tokenizer.select_next()
+            return ReadNode()
+
