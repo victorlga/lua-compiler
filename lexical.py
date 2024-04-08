@@ -13,7 +13,13 @@ class Tokenizer:
         self.position: int = 0
         self.next: Token = None
         self.reserved_words_types = {
-            'print': 'PRINT',
+            'print' : 'PRINT',
+            'and'   : 'AND',
+            'or'    : 'OR',
+            'not'   : 'NOT',
+            'read'  : 'READ',
+            'if'    : 'IF',
+            'while' : 'WHILE',
         }
 
     def select_next(self):
@@ -31,6 +37,10 @@ class Tokenizer:
             ctype = 'OPEN_PAR'
         elif value == ')':
             ctype = 'CLOSE_PAR'
+        elif value == '>':
+            ctype = 'BIGGER'
+        elif value == '<':
+            ctype = 'LOWER'
         elif value == '-':
             ctype = 'MINUS'
         elif value == '+':
@@ -54,8 +64,12 @@ class Tokenizer:
                 value += self._define_value(fallback=' ')
             value = value[:-1]
             self.position -= 1
-            is_reserved_word = value in self.reserved_words_types.keys()
-            ctype = self.reserved_words_types[value] if is_reserved_word else 'IDENTIFIER'
+            is_reserved_word = value in self.reserved_words_types
+            ctype = (
+                self.reserved_words_types[value]
+                if is_reserved_word
+                else 'IDENTIFIER'
+            )
         else:
             raise ValueError('Not a valid character: ' + value)
 
