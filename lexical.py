@@ -20,6 +20,9 @@ class Tokenizer:
             'read'  : 'READ',
             'if'    : 'IF',
             'while' : 'WHILE',
+            'do'    : 'DO',
+            'else'  : 'ELSE',
+            'end'   : 'END',
         }
 
     def select_next(self):
