@@ -58,6 +58,16 @@ class BinOpNode(Node):
             return self.children[0].evaluate(symbol_table) * self.children[1].evaluate(symbol_table)
         elif self.value == '/':
             return self.children[0].evaluate(symbol_table) // self.children[1].evaluate(symbol_table)
+        elif self.value == 'and':
+            return self.children[0].evaluate(symbol_table) and self.children[1].evaluate(symbol_table)
+        elif self.value == 'or':
+            return self.children[0].evaluate(symbol_table) or self.children[1].evaluate(symbol_table)
+        elif self.value == '>':
+            return self.children[0].evaluate(symbol_table) > self.children[1].evaluate(symbol_table)
+        elif self.value == '<':
+            return self.children[0].evaluate(symbol_table) < self.children[1].evaluate(symbol_table)
+        elif self.value == '==':
+            return self.children[0].evaluate(symbol_table) == self.children[1].evaluate(symbol_table)
 
 class UnOpNode(Node):
 
@@ -73,6 +83,6 @@ class IntValNode(Node):
         return int(self.value)
 
 class NoOpNode(Node):
-    
+
     def evaluate(self, symbol_table):
         pass
