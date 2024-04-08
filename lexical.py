@@ -50,7 +50,12 @@ class Tokenizer:
         elif value == '/':
             ctype = 'DIV'
         elif value == '=':
-            ctype = 'EQ'
+            self.position += 1
+            if self._define_value() == '=':
+                ctype = 'EQUAL'
+            else:
+                self.position -= 1
+                ctype = 'ASSING'
         elif value.isdigit():
             while value.isdigit():
                 self.position += 1
