@@ -37,8 +37,8 @@ class Parser:
 
             self.tokenizer.select_next()
             token = self.tokenizer.next
-            if token.type != 'EQ':
-                raise ValueError('Expected EQ token type, got: ' + token.type)
+            if token.type != 'ASSING':
+                raise ValueError('Expected ASSING token type, got: ' + token.type)
             assigment_node = AssigmentNode()
             assigment_node.children.append(identifier_node)
 
@@ -80,6 +80,64 @@ class Parser:
             raise ValueError('Expected NEWLINE token type, got: ' + token.type)
 
         return NoOpNode()
+
+    def _parse_bool_expression(self):
+        bool_term = self._parse_bool_term()
+        bool_expression = bool_term
+        token = self.tokenizer.next
+
+        while token.type == 'OR':
+
+            binop = BinOpNode(token.value)
+            binop.children.append(bool_expression)
+
+            self.tokenizer.select_next()
+            bool_term = self._parse_bool_term()
+            binop.children.append(bool_term)
+
+            token = self.tokenizer.next
+            bool_expression = binop
+
+        return bool_expression
+
+    def _parse_bool_term(self):
+        
+        relational_expression = self._parse_relational_expression()
+        bool_term = relational_expression
+        token = self.tokenizer.next
+
+        while token.type == 'AND':
+
+            binop = BinOpNode(token.value)
+            binop.children.append(bool_term)
+
+            self.tokenizer.select_next()
+            relational_expression = self._parse_relational_expression()
+            binop.children.append(relational_expression)
+
+            token = self.tokenizer.next
+            bool_term = binop
+
+        return bool_term
+
+    def _parse_relational_expression(self):
+        expression = self._parse_expression()
+        relational_expression = expression
+        token = self.tokenizer.next
+
+        while token.type in ('BIGGER', 'LOWER', 'EQUAL'):
+
+            binop = BinOpNode(token.value)
+            binop.children.append(relational_expression)
+
+            self.tokenizer.select_next()
+            expression = self._parse_expression()
+            binop.children.append(expression)
+
+            token = self.tokenizer.next
+            relational_expression = binop
+
+        return relational_expression
 
 
     def _parse_expression(self):
