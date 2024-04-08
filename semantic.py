@@ -27,6 +27,11 @@ class IdentifierNode(Node):
     def evaluate(self, symbol_table):
         return symbol_table.get(self.value)
     
+class ReadNode(Node):
+
+    def evaluate(self, symbol_table):
+        return int(input())
+
 class WhileNode(Node):
 
     def evaluate(self, symbol_table):
@@ -44,8 +49,7 @@ class IfNode(Node):
 class PrintNode(Node):
 
     def evaluate(self, symbol_table):
-        value = str(self.children[0].evaluate(symbol_table)) + '\n'
-        sys.stdout.write(value)
+        print(self.children[0].evaluate(symbol_table))
 
 class AssigmentNode(Node):
 
