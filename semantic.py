@@ -43,7 +43,7 @@ class IfNode(Node):
     def evaluate(self, symbol_table):
         if self.children[0].evaluate(symbol_table):
             self.children[1].evaluate(symbol_table)
-        elif len(self.children) >= 2:
+        else:
             self.children[2].evaluate(symbol_table)
 
 class PrintNode(Node):
