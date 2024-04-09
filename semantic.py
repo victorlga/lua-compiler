@@ -76,18 +76,18 @@ class BinOpNode(Node):
             return self.children[0].evaluate(symbol_table) * self.children[1].evaluate(symbol_table)
         elif self.value == '/':
             return self.children[0].evaluate(symbol_table) // self.children[1].evaluate(symbol_table)
-        elif self.value == 'and':
-            return self.children[0].evaluate(symbol_table) and self.children[1].evaluate(symbol_table)
-        elif self.value == 'or':
-            eval0 = self.children[0].evaluate(symbol_table)
-            eval1 = self.children[1].evaluate(symbol_table)
-            return eval0 or eval1
         elif self.value == '>':
             return self.children[0].evaluate(symbol_table) > self.children[1].evaluate(symbol_table)
         elif self.value == '<':
             return self.children[0].evaluate(symbol_table) < self.children[1].evaluate(symbol_table)
         elif self.value == '==':
             return self.children[0].evaluate(symbol_table) == self.children[1].evaluate(symbol_table)
+        elif self.value == 'and':
+            return self.children[0].evaluate(symbol_table) and self.children[1].evaluate(symbol_table)
+        elif self.value == 'or':
+            if self.children[1] is None:
+                raise AttributeError('\'NoneType\' object has no attribute \'evaluate\'')
+            return self.children[0].evaluate(symbol_table) or self.children[1].evaluate(symbol_table)
 
 class UnOpNode(Node):
 
