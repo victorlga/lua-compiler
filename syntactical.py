@@ -70,7 +70,7 @@ class Parser:
             self.tokenizer.select_next()
 
             token = self.tokenizer.next
-            if token.type != 'NEWLINE':
+            if token.type not in ('NEWLINE', 'EOF'):
                 raise ValueError('Expected NEWLINE token type, got: ' + token.type)
 
             return print_node
@@ -112,7 +112,7 @@ class Parser:
             self.tokenizer.select_next()
             token = self.tokenizer.next
             if token.type != 'THEN':
-                raise ValueError('Expected DO token type, got: ' + token.type)
+                raise ValueError('Expected THEN token type, got: ' + token.type)
             
             self.tokenizer.select_next()
             token = self.tokenizer.next
@@ -260,7 +260,7 @@ class Parser:
         elif token.type == 'INT':
             self.tokenizer.select_next()
             return IntValNode(token.value)
-        elif token.type in ('PLUS', 'MINUS'):
+        elif token.type in ('PLUS', 'MINUS', 'NOT'):
             self.tokenizer.select_next()
             factor = self._parse_factor()
             unop = UnOpNode(token.value)
