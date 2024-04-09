@@ -23,12 +23,13 @@ class Tokenizer:
             'do'    : 'DO',
             'else'  : 'ELSE',
             'end'   : 'END',
+            'then'  : 'THEN',
         }
 
     def select_next(self):
 
         value = self._define_value()
-        while value == ' ':
+        while value in (' ', '\t'):
             self.position += 1
             value = self._define_value()
 
@@ -79,6 +80,7 @@ class Tokenizer:
                 else 'IDENTIFIER'
             )
         else:
+            print(len(value))
             raise ValueError('Not a valid character: ' + value)
 
         self.position += 1
