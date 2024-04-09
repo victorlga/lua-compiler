@@ -79,7 +79,9 @@ class BinOpNode(Node):
         elif self.value == 'and':
             return self.children[0].evaluate(symbol_table) and self.children[1].evaluate(symbol_table)
         elif self.value == 'or':
-            return self.children[0].evaluate(symbol_table) or self.children[1].evaluate(symbol_table)
+            eval0 = self.children[0].evaluate(symbol_table)
+            eval1 = self.children[1].evaluate(symbol_table)
+            return eval0 or eval1
         elif self.value == '>':
             return self.children[0].evaluate(symbol_table) > self.children[1].evaluate(symbol_table)
         elif self.value == '<':
