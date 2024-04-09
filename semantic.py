@@ -94,6 +94,8 @@ class UnOpNode(Node):
             return self.children[0].evaluate(symbol_table)
         elif self.value == '-':
             return -self.children[0].evaluate(symbol_table)
+        elif self.value == 'not':
+            return not self.children[0].evaluate(symbol_table)
 
 class IntValNode(Node):
 
