@@ -56,6 +56,7 @@ class Tokenizer:
         elif value == '=':
             self.position += 1
             if self._define_value() == '=':
+                value = '=='
                 ctype = 'EQUAL'
             else:
                 self.position -= 1
@@ -80,7 +81,6 @@ class Tokenizer:
                 else 'IDENTIFIER'
             )
         else:
-            print(len(value))
             raise ValueError('Not a valid character: ' + value)
 
         self.position += 1
