@@ -82,7 +82,6 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             while_node.children.append(bool_expression)
 
-            self.tokenizer.select_next()
             token = self.tokenizer.next
             if token.type != 'DO':
                 raise ValueError('Expected DO token type, got: ' + token.type)
@@ -102,6 +101,8 @@ class Parser:
 
             while_node.children.append(block_node)
 
+            return while_node
+
         elif token.type == 'IF':
             if_node = IfNode()
 
@@ -109,11 +110,10 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             if_node.children.append(bool_expression)
 
-            self.tokenizer.select_next()
             token = self.tokenizer.next
             if token.type != 'THEN':
                 raise ValueError('Expected THEN token type, got: ' + token.type)
-            
+
             self.tokenizer.select_next()
             token = self.tokenizer.next
             if token.type != 'NEWLINE':
@@ -144,6 +144,8 @@ class Parser:
                 self.tokenizer.select_next()
 
             if_node.children.append(else_block_node)
+
+            return if_node
 
         token = self.tokenizer.next
         if token.type != 'NEWLINE':
