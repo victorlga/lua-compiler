@@ -101,6 +101,12 @@ class Parser:
 
             while_node.children.append(block_node)
 
+            self.tokenizer.select_next()
+
+            token = self.tokenizer.next
+            if token.type not in ('NEWLINE', 'EOF'):
+                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+
             return while_node
 
         elif token.type == 'IF':
@@ -144,6 +150,12 @@ class Parser:
                 self.tokenizer.select_next()
 
             if_node.children.append(else_block_node)
+
+            self.tokenizer.select_next()
+
+            token = self.tokenizer.next
+            if token.type not in ('NEWLINE', 'EOF'):
+                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
 
             return if_node
 
