@@ -136,8 +136,8 @@ class Parser:
         return NoOpNode()
     
     def _binop_parse_template(self, parsing_func, binop_types):
-        expression = parsing_func()
-        result = expression
+        node = parsing_func()
+        result = node
         token = self.tokenizer.next
 
         while token.type in binop_types:
@@ -145,8 +145,8 @@ class Parser:
             binop.children.append(result)
 
             self.tokenizer.select_next()
-            expression = parsing_func()
-            binop.children.append(expression)
+            node = parsing_func()
+            binop.children.append(node)
 
             token = self.tokenizer.next
             result = binop
@@ -195,4 +195,3 @@ class Parser:
             self._raise_error_unexpected_token(True, 'CLOSE_PAR')
             self.tokenizer.select_next()
             return ReadNode()
-
