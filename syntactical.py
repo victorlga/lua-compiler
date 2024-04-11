@@ -17,6 +17,12 @@ class Parser:
         ast_root = self._parse_block()
         return ast_root
     
+    def _raise_error_unexpected_token(self, select, *expected_tokens):
+        if select:
+            self.tokenizer.select_next()
+        if self.tokenizer.next.type not in expected_tokens:
+            raise ValueError(f'Expected one of {expected_tokens} token types, got: {self.tokenizer.next.type}')
+
     def _parse_block(self):
 
         block_node = BlockNode()
@@ -35,10 +41,8 @@ class Parser:
         if token.type == 'IDENTIFIER':
             identifier_node = IdentifierNode(token.value)
 
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
-            if token.type != 'ASSING':
-                raise ValueError('Expected ASSING token type, got: ' + token.type)
+            self._raise_error_unexpected_token(True, 'ASSING')
+
             assigment_node = AssigmentNode()
             assigment_node.children.append(identifier_node)
 
@@ -46,32 +50,21 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             assigment_node.children.append(bool_expression)
 
-            token = self.tokenizer.next
-            if token.type != 'NEWLINE':
-                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+            self._raise_error_unexpected_token(False, 'NEWLINE')
 
             return assigment_node
 
         elif token.type == 'PRINT':
             print_node = PrintNode()
 
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
-            if token.type != 'OPEN_PAR':
-                raise ValueError('Expected OPEN_PAR token type, got: ' + token.type)
+            self._raise_error_unexpected_token(True, 'OPEN_PAR')
 
             self.tokenizer.select_next()
             bool_expression = self._parse_bool_expression()
             print_node.children.append(bool_expression)
 
-            token = self.tokenizer.next
-            if token.type != 'CLOSE_PAR':
-                raise ValueError('Expected CLOSE_PAR token type, got: ' + token.type)
-            self.tokenizer.select_next()
-
-            token = self.tokenizer.next
-            if token.type not in ('NEWLINE', 'EOF'):
-                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+            self._raise_error_unexpected_token(False, 'CLOSE_PAR')
+            self._raise_error_unexpected_token(True, 'NEWLINE', 'EOF')
 
             return print_node
 
@@ -82,14 +75,9 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             while_node.children.append(bool_expression)
 
-            token = self.tokenizer.next
-            if token.type != 'DO':
-                raise ValueError('Expected DO token type, got: ' + token.type)
+            self._raise_error_unexpected_token(False, 'DO')
             
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
-            if token.type != 'NEWLINE':
-                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+            self._raise_error_unexpected_token(True, 'NEWLINE')
             
             block_node = BlockNode()
             
@@ -101,11 +89,7 @@ class Parser:
 
             while_node.children.append(block_node)
 
-            self.tokenizer.select_next()
-
-            token = self.tokenizer.next
-            if token.type not in ('NEWLINE', 'EOF'):
-                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+            self._raise_error_unexpected_token(True, 'NEWLINE', 'EOF')
 
             return while_node
 
@@ -116,14 +100,9 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             if_node.children.append(bool_expression)
 
-            token = self.tokenizer.next
-            if token.type != 'THEN':
-                raise ValueError('Expected THEN token type, got: ' + token.type)
+            self._raise_error_unexpected_token(False, 'THEN')
 
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
-            if token.type != 'NEWLINE':
-                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+            self._raise_error_unexpected_token(True, 'NEWLINE')
             
             block_node = BlockNode()
             
@@ -136,10 +115,7 @@ class Parser:
             if_node.children.append(block_node)
 
             if (has_else:=self.tokenizer.next.type == 'ELSE'):
-                self.tokenizer.select_next()
-                token = self.tokenizer.next
-                if token.type != 'NEWLINE':
-                    raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+                self._raise_error_unexpected_token(True, 'NEWLINE')
                 self.tokenizer.select_next()
 
             else_block_node = BlockNode()
@@ -151,17 +127,11 @@ class Parser:
 
             if_node.children.append(else_block_node)
 
-            self.tokenizer.select_next()
-
-            token = self.tokenizer.next
-            if token.type not in ('NEWLINE', 'EOF'):
-                raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+            self._raise_error_unexpected_token(True, 'NEWLINE', 'EOF')
 
             return if_node
 
-        token = self.tokenizer.next
-        if token.type != 'NEWLINE':
-            raise ValueError('Expected NEWLINE token type, got: ' + token.type)
+        self._raise_error_unexpected_token(False, 'NEWLINE')
 
         return NoOpNode()
 
@@ -283,20 +253,12 @@ class Parser:
         elif token.type == 'OPEN_PAR':
             self.tokenizer.select_next()
             expression = self._parse_bool_expression()
-            token = self.tokenizer.next
-            if token.type != 'CLOSE_PAR':
-                raise ValueError('Expected CLOSE_PAR token type, got: ' + token.type)
+            self._raise_error_unexpected_token(False, 'CLOSE_PAR')
             self.tokenizer.select_next()
             return expression
         elif token.type == 'READ':
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
-            if token.type != 'OPEN_PAR':
-                raise ValueError('Expected OPEN_PAR token type, got: ' + token.type)
-            self.tokenizer.select_next()
-            token = self.tokenizer.next
-            if token.type != 'CLOSE_PAR':
-                raise ValueError('Expected CLOSE_PAR token type, got: ' + token.type)
+            self._raise_error_unexpected_token(True, 'OPEN_PAR')
+            self._raise_error_unexpected_token(True, 'CLOSE_PAR')
             self.tokenizer.select_next()
             return ReadNode()
 
