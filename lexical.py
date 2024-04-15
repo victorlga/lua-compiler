@@ -24,6 +24,7 @@ class Tokenizer:
             'while' : 'WHILE',
             'do'    : 'DO',
             'end'   : 'END',
+            'local' : 'LOCAL',
         }
 
     def select_next(self):
@@ -53,6 +54,13 @@ class Tokenizer:
             ctype = 'MULT'
         elif value == '/':
             ctype = 'DIV'
+        elif value == '.':
+            self.position += 1
+            if self._define_value() == '.':
+                value += self._define_value()
+            else:
+                raise SyntaxError('Not a valid operator: ' + value)
+            ctype = 'CONCAT'
         elif value == '=':
             self.position += 1
             if self._define_value() == '=':
@@ -61,6 +69,15 @@ class Tokenizer:
             else:
                 self.position -= 1
                 ctype = 'ASSING'
+        elif value == '"':
+            while self.source[self.position+1] != '"':
+                self.position += 1
+                value += self._define_value(
+                    fallback=[SyntaxError, 'Quotation mark is not closed.']
+                )
+            self.position += 1
+            value += self._define_value()
+            ctype = 'STRING'
         elif value.isdigit():
             while value.isdigit():
                 self.position += 1
@@ -91,6 +108,8 @@ class Tokenizer:
         return self.position >= len(self.source)
     
     def _define_value(self, fallback=''):
+        if isinstance(fallback, list) and self._end_of_file():
+            raise fallback[0](fallback[1])
         return fallback if self._end_of_file() else self.source[self.position]
 
     @staticmethod
