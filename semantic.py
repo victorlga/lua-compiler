@@ -38,7 +38,7 @@ class IdentifierNode(Node):
 class ReadNode(Node):
 
     def evaluate(self, symbol_table):
-        return int(input())
+        return int(input()), 'INT'
 
 class WhileNode(Node):
 
@@ -89,59 +89,63 @@ class BinOpNode(Node):
         eval_children_1 = self.children[1].evaluate(symbol_table)
         if self.value == '+':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 + eval_children_1
+            return eval_children_0 + eval_children_1, 'INT'
         elif self.value == '-':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 - eval_children_1
+            return eval_children_0 - eval_children_1, 'INT'
         elif self.value == '*':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 * eval_children_1
+            return eval_children_0 * eval_children_1, 'INT'
         elif self.value == '/':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 // eval_children_1
+            return eval_children_0 // eval_children_1, 'INT'
         elif self.value == '>':
-            self._check_data_type(['INT', 'STRING'], eval_children_0, eval_children_1)
-            return eval_children_0 > eval_children_1
+            self._check_data_types_is_equal(eval_children_0, eval_children_1)
+            return eval_children_0 > eval_children_1, 'INT'
         elif self.value == '<':
-            self._check_data_type(['INT', 'STRING'], eval_children_0, eval_children_1)
-            return eval_children_0 < eval_children_1
+            self._check_data_types_is_equal(eval_children_0, eval_children_1)
+            return eval_children_0 < eval_children_1, 'INT'
         elif self.value == '==':
-            self._check_data_type(['INT', 'STRING'], eval_children_0, eval_children_1)
-            return eval_children_0 == eval_children_1
+            self._check_data_types_is_equal(eval_children_0, eval_children_1)
+            return eval_children_0 == eval_children_1, 'INT'
         elif self.value == 'and':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 and eval_children_1
+            return eval_children_0 and eval_children_1, 'INT'
         elif self.value == 'or':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 or eval_children_1
+            return eval_children_0 or eval_children_1, 'INT'
         elif self.value == '..':
             self._check_data_type(['INT', 'STRING'], eval_children_0, eval_children_1)
-            return str(eval_children_0) + str(eval_children_1)
+            return str(eval_children_0) + str(eval_children_1), 'STRING'
 
     def _check_data_type(self, data_type, eval_chil_0, eval_chil_1):
         if eval_chil_0[1] not in data_type or eval_chil_1[1] not in data_type:
                 raise TypeError(f'"{self.value}" operator is only allowed with ' + data_type + ' data.')
+        
+    def _check_data_types_is_equal(self, eval_chil_0, eval_chil_1):
+        if eval_chil_0[1] != eval_chil_1[1]:
+            raise TypeError(f'"{self.value}" operator can\'t be used between data with different types.')
 
 
 class UnOpNode(Node):
 
     def evaluate(self, symbol_table):
         if self.value == '+':
-            return self.children[0].evaluate(symbol_table)
+            return self.children[0].evaluate(symbol_table), 'INT'
         elif self.value == '-':
-            return -self.children[0].evaluate(symbol_table)
+            return -self.children[0].evaluate(symbol_table), 'INT'
         elif self.value == 'not':
-            return not self.children[0].evaluate(symbol_table)
+            return not self.children[0].evaluate(symbol_table), 'INT'
 
 class IntValNode(Node):
 
     def evaluate(self, symbol_table):
-        return int(self.value)
+        return int(self.value), 'INT'
 
 class StringNode(Node):
 
     def evaluate(self, symbol_table):
-        return str(self.value)
+        return str(self.value), 'STRING'
 
 class NoOpNode(Node):
 
