@@ -2,7 +2,8 @@ from lexical import Tokenizer
 from preprocessing import filter
 from semantic import (
     BinOpNode, IntValNode, UnOpNode, PrintNode, AssigmentNode, BlockNode,
-    IdentifierNode, NoOpNode, ReadNode, IfNode, WhileNode
+    IdentifierNode, NoOpNode, ReadNode, IfNode, WhileNode, StringNode,
+    VarDecNode
 )
 
 class Parser:
@@ -17,7 +18,7 @@ class Parser:
         ast_root = self._parse_block()
         return ast_root
     
-    def _raise_error_unexpected_token(self, select, *expected_tokens):
+    def _select_and_check_unexpected_token(self, select, *expected_tokens):
         if select:
             self.tokenizer.select_next()
         if self.tokenizer.next.type not in expected_tokens:
@@ -41,7 +42,7 @@ class Parser:
         if token.type == 'IDENTIFIER':
             identifier_node = IdentifierNode(token.value)
 
-            self._raise_error_unexpected_token(True, 'ASSING')
+            self._select_and_check_unexpected_token(True, 'ASSING')
 
             assigment_node = AssigmentNode()
             assigment_node.children.append(identifier_node)
@@ -50,22 +51,37 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             assigment_node.children.append(bool_expression)
 
-            self._raise_error_unexpected_token(False, 'NEWLINE')
-
+            self._select_and_check_unexpected_token(False, 'NEWLINE')
             return assigment_node
+
+        elif token.type == 'LOCAL':
+            var_dec_node = VarDecNode()
+
+            self._select_and_check_unexpected_token(True, 'IDENTIFIER')
+
+            identifier_node = IdentifierNode(self.tokenizer.next.value)
+            var_dec_node.children.append(identifier_node)
+
+            self.tokenizer.select_next()
+            if self.tokenizer.next.type == 'ASSIGN':
+                self.tokenizer.select_next()
+                bool_expression = self._parse_bool_expression()
+                var_dec_node.children.append(bool_expression)
+            
+            self._select_and_check_unexpected_token(False, 'NEWLINE')
+            return var_dec_node
 
         elif token.type == 'PRINT':
             print_node = PrintNode()
 
-            self._raise_error_unexpected_token(True, 'OPEN_PAR')
+            self._select_and_check_unexpected_token(True, 'OPEN_PAR')
 
             self.tokenizer.select_next()
             bool_expression = self._parse_bool_expression()
             print_node.children.append(bool_expression)
 
-            self._raise_error_unexpected_token(False, 'CLOSE_PAR')
-            self._raise_error_unexpected_token(True, 'NEWLINE', 'EOF')
-
+            self._select_and_check_unexpected_token(False, 'CLOSE_PAR')
+            self._select_and_check_unexpected_token(True, 'NEWLINE', 'EOF')
             return print_node
 
         elif token.type == 'WHILE':
@@ -75,9 +91,8 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             while_node.children.append(bool_expression)
 
-            self._raise_error_unexpected_token(False, 'DO')
-            
-            self._raise_error_unexpected_token(True, 'NEWLINE')
+            self._select_and_check_unexpected_token(False, 'DO')
+            self._select_and_check_unexpected_token(True, 'NEWLINE')
             
             block_node = BlockNode()
             
@@ -89,8 +104,7 @@ class Parser:
 
             while_node.children.append(block_node)
 
-            self._raise_error_unexpected_token(True, 'NEWLINE', 'EOF')
-
+            self._select_and_check_unexpected_token(True, 'NEWLINE', 'EOF')
             return while_node
 
         elif token.type == 'IF':
@@ -100,9 +114,8 @@ class Parser:
             bool_expression = self._parse_bool_expression()
             if_node.children.append(bool_expression)
 
-            self._raise_error_unexpected_token(False, 'THEN')
-
-            self._raise_error_unexpected_token(True, 'NEWLINE')
+            self._select_and_check_unexpected_token(False, 'THEN')
+            self._select_and_check_unexpected_token(True, 'NEWLINE')
             
             block_node = BlockNode()
             
@@ -115,7 +128,7 @@ class Parser:
             if_node.children.append(block_node)
 
             if (has_else:=self.tokenizer.next.type == 'ELSE'):
-                self._raise_error_unexpected_token(True, 'NEWLINE')
+                self._select_and_check_unexpected_token(True, 'NEWLINE')
                 self.tokenizer.select_next()
 
             else_block_node = BlockNode()
@@ -127,11 +140,10 @@ class Parser:
 
             if_node.children.append(else_block_node)
 
-            self._raise_error_unexpected_token(True, 'NEWLINE', 'EOF')
-
+            self._select_and_check_unexpected_token(True, 'NEWLINE', 'EOF')
             return if_node
 
-        self._raise_error_unexpected_token(False, 'NEWLINE')
+        self._select_and_check_unexpected_token(False, 'NEWLINE')
 
         return NoOpNode()
     
@@ -163,7 +175,7 @@ class Parser:
         return self._binop_parse_template(self._parse_expression, {'BIGGER', 'LOWER', 'EQUAL'})
 
     def _parse_expression(self):
-        return self._binop_parse_template(self._parse_term, {'PLUS', 'MINUS'})
+        return self._binop_parse_template(self._parse_term, {'PLUS', 'MINUS', 'CONCAT'})
 
     def _parse_term(self):
         return self._binop_parse_template(self._parse_factor, {'MULT', 'DIV'})
@@ -175,6 +187,9 @@ class Parser:
         if token.type == 'IDENTIFIER':
             self.tokenizer.select_next()
             return IdentifierNode(token.value)
+        elif token.type == 'STRING':
+            self.tokenizer.select_next()
+            return StringNode(token.value)
         elif token.type == 'INT':
             self.tokenizer.select_next()
             return IntValNode(token.value)
@@ -187,11 +202,11 @@ class Parser:
         elif token.type == 'OPEN_PAR':
             self.tokenizer.select_next()
             expression = self._parse_bool_expression()
-            self._raise_error_unexpected_token(False, 'CLOSE_PAR')
+            self._select_and_check_unexpected_token(False, 'CLOSE_PAR')
             self.tokenizer.select_next()
             return expression
         elif token.type == 'READ':
-            self._raise_error_unexpected_token(True, 'OPEN_PAR')
-            self._raise_error_unexpected_token(True, 'CLOSE_PAR')
+            self._select_and_check_unexpected_token(True, 'OPEN_PAR')
+            self._select_and_check_unexpected_token(True, 'CLOSE_PAR')
             self.tokenizer.select_next()
             return ReadNode()
