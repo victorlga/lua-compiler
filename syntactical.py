@@ -63,7 +63,7 @@ class Parser:
             var_dec_node.children.append(identifier_node)
 
             self.tokenizer.select_next()
-            if self.tokenizer.next.type == 'ASSIGN':
+            if self.tokenizer.next.type == 'ASSING':
                 self.tokenizer.select_next()
                 bool_expression = self._parse_bool_expression()
                 var_dec_node.children.append(bool_expression)

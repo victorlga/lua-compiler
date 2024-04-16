@@ -57,7 +57,7 @@ class IfNode(Node):
 class VarDecNode(Node):
 
     def evaluate(self, symbol_table):
-        key = self.children[0].evaluate(symbol_table)
+        key = self.children[0].value
         symbol_table.create(key)
         if len(self.children) > 1:
             value = self.children[1].evaluate(symbol_table)
@@ -89,34 +89,34 @@ class BinOpNode(Node):
         eval_children_1 = self.children[1].evaluate(symbol_table)
         if self.value == '+':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 + eval_children_1, 'INT'
+            return eval_children_0[0] + eval_children_1[0], 'INT'
         elif self.value == '-':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 - eval_children_1, 'INT'
+            return eval_children_0[0] - eval_children_1[0], 'INT'
         elif self.value == '*':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 * eval_children_1, 'INT'
+            return eval_children_0[0] * eval_children_1[0], 'INT'
         elif self.value == '/':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 // eval_children_1, 'INT'
+            return eval_children_0[0] // eval_children_1[0], 'INT'
         elif self.value == '>':
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return eval_children_0 > eval_children_1, 'INT'
+            return eval_children_0[0] > eval_children_1[0], 'INT'
         elif self.value == '<':
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return eval_children_0 < eval_children_1, 'INT'
+            return eval_children_0[0] < eval_children_1[0], 'INT'
         elif self.value == '==':
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return eval_children_0 == eval_children_1, 'INT'
+            return eval_children_0[0] == eval_children_1[0], 'INT'
         elif self.value == 'and':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 and eval_children_1, 'INT'
+            return eval_children_0[0] and eval_children_1[0], 'INT'
         elif self.value == 'or':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0 or eval_children_1, 'INT'
+            return eval_children_0[0] or eval_children_1[0], 'INT'
         elif self.value == '..':
             self._check_data_type(['INT', 'STRING'], eval_children_0, eval_children_1)
-            return str(eval_children_0) + str(eval_children_1), 'STRING'
+            return str(eval_children_0[0]) + str(eval_children_1[0]), 'STRING'
 
     def _check_data_type(self, data_type, eval_chil_0, eval_chil_1):
         if eval_chil_0[1] not in data_type or eval_chil_1[1] not in data_type:
