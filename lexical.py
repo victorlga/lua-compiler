@@ -70,13 +70,13 @@ class Tokenizer:
                 self.position -= 1
                 ctype = 'ASSING'
         elif value == '"':
+            value = ''
             while self.source[self.position+1] != '"':
                 self.position += 1
                 value += self._define_value(
                     fallback=[SyntaxError, 'Quotation mark is not closed.']
                 )
             self.position += 1
-            value += self._define_value()
             ctype = 'STRING'
         elif value.isdigit():
             while value.isdigit():

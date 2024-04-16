@@ -101,19 +101,19 @@ class BinOpNode(Node):
             return eval_children_0[0] // eval_children_1[0], 'INT'
         elif self.value == '>':
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return eval_children_0[0] > eval_children_1[0], 'INT'
+            return int(eval_children_0[0] > eval_children_1[0]), 'INT'
         elif self.value == '<':
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return eval_children_0[0] < eval_children_1[0], 'INT'
+            return int(eval_children_0[0] < eval_children_1[0]), 'INT'
         elif self.value == '==':
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return eval_children_0[0] == eval_children_1[0], 'INT'
+            return int(eval_children_0[0] == eval_children_1[0]), 'INT'
         elif self.value == 'and':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0[0] and eval_children_1[0], 'INT'
+            return int(eval_children_0[0] and eval_children_1[0]), 'INT'
         elif self.value == 'or':
             self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0[0] or eval_children_1[0], 'INT'
+            return int(eval_children_0[0] or eval_children_1[0]), 'INT'
         elif self.value == '..':
             self._check_data_type(['INT', 'STRING'], eval_children_0, eval_children_1)
             return str(eval_children_0[0]) + str(eval_children_1[0]), 'STRING'
