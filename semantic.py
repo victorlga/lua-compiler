@@ -43,13 +43,13 @@ class ReadNode(Node):
 class WhileNode(Node):
 
     def evaluate(self, symbol_table):
-        while self.children[0].evaluate(symbol_table):
+        while self.children[0].evaluate(symbol_table)[0]:
             self.children[1].evaluate(symbol_table)
 
 class IfNode(Node):
 
     def evaluate(self, symbol_table):
-        if self.children[0].evaluate(symbol_table):
+        if self.children[0].evaluate(symbol_table)[0]:
             self.children[1].evaluate(symbol_table)
         else:
             self.children[2].evaluate(symbol_table)
@@ -66,7 +66,7 @@ class VarDecNode(Node):
 class PrintNode(Node):
 
     def evaluate(self, symbol_table):
-        print(self.children[0].evaluate(symbol_table))
+        print(self.children[0].evaluate(symbol_table)[0])
 
 class AssigmentNode(Node):
 
@@ -131,11 +131,11 @@ class UnOpNode(Node):
 
     def evaluate(self, symbol_table):
         if self.value == '+':
-            return self.children[0].evaluate(symbol_table), 'INT'
+            return self.children[0].evaluate(symbol_table)[0], 'INT'
         elif self.value == '-':
-            return -self.children[0].evaluate(symbol_table), 'INT'
+            return -self.children[0].evaluate(symbol_table)[0], 'INT'
         elif self.value == 'not':
-            return not self.children[0].evaluate(symbol_table), 'INT'
+            return not self.children[0].evaluate(symbol_table)[0], 'INT'
 
 class IntValNode(Node):
 
