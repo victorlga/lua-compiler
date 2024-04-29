@@ -4,7 +4,7 @@ from textwrap import dedent
 
 class ASM:
 
-    initial_code = dedent('''
+    initial_code = '''
         ; constantes
         SYS_EXIT equ 1
         SYS_READ equ 3
@@ -62,9 +62,9 @@ class ASM:
         MOV EBP, ESP ; estabelece um novo base pointer
 
         ; codigo gerado pelo compilador abaixo
-    ''')
+    '''
 
-    final_code = dedent('''
+    final_code = '''
         ; interrupcao de saida (default)
 
         PUSH DWORD [stdout]
@@ -77,30 +77,32 @@ class ASM:
         MOV EAX, 1
         XOR EBX, EBX
         INT 0x80        
-    ''')
+    '''
 
     def __init__(self, filename):
         self.filename = filename
         with open(filename, 'w') as file:
-            file.write(self.initial_code)
+            file.write(dedent(self.initial_code))
 
     def write(self, code):
         with open(self.filename, 'a') as file:
-            file.write(code)
+            file.write(dedent(code))
 
     def end(self):
         with open(self.filename, 'a') as file:
-            file.write(self.final_code)
+            file.write(dedent(self.final_code))
 
 class SymbolTable:
 
     def __init__(self):
         self.table = {}
+        self.address = 4
 
     def create(self, key):
         if key in self.table:
             raise RuntimeError(f'Key {key} already created.')
-        self.table[key] = None
+        self.table[key] = (None, None, self.address)
+        self.address += 4
 
     def get(self, key):
         return self.table[key]
@@ -123,86 +125,113 @@ class Node(ABC):
 
 class IdentifierNode(Node):
 
-    def evaluate(self, symbol_table):
-        return symbol_table.get(self.value)
+    def evaluate(self, symbol_table, asm):
+        value = symbol_table.get(self.value)
+        address = value[2]
+        asm.write(f'MOV EAX, [EBP-{address}]\n')
+        return value
     
 class ReadNode(Node):
 
-    def evaluate(self, symbol_table):
+    def evaluate(self, symbol_table, asm):
+        asm.write('PUSH scanint\n')
+        asm.write('PUSH formatin\n')
+        asm.write('CALL scanf\n')
+        asm.write('ADD ESP, 8\n')
+        asm.write('MOV EAX, DWORD [scanint]\n')
         return int(input()), 'INT'
 
 class WhileNode(Node):
 
-    def evaluate(self, symbol_table):
-        while self.children[0].evaluate(symbol_table)[0]:
-            self.children[1].evaluate(symbol_table)
+    def evaluate(self, symbol_table, asm):
+        while self.children[0].evaluate(symbol_table, asm)[0]:
+            self.children[1].evaluate(symbol_table, asm)
 
 class IfNode(Node):
 
-    def evaluate(self, symbol_table):
-        if self.children[0].evaluate(symbol_table)[0]:
-            self.children[1].evaluate(symbol_table)
+    def evaluate(self, symbol_table, asm):
+        if self.children[0].evaluate(symbol_table, asm)[0]:
+            self.children[1].evaluate(symbol_table, asm)
         else:
-            self.children[2].evaluate(symbol_table)
+            self.children[2].evaluate(symbol_table, asm)
 
 class VarDecNode(Node):
 
-    def evaluate(self, symbol_table):
+    def evaluate(self, symbol_table, asm):
+        asm.write(f'PUSH DWORD 0\n')
         key = self.children[0].value
         symbol_table.create(key)
         if len(self.children) > 1:
-            value = self.children[1].evaluate(symbol_table)
-            symbol_table.set(key, value)
+            value = self.children[1].evaluate(symbol_table, asm)
+            symbol_table.set(key, value + (symbol_table.get(key)[2],))
 
 class PrintNode(Node):
 
-    def evaluate(self, symbol_table):
-        print(self.children[0].evaluate(symbol_table)[0])
+    def evaluate(self, symbol_table, asm):
+        self.children[0].evaluate(symbol_table, asm)[0]
+        asm.write('PUSH EAX\n')
+        asm.write('PUSH formatout\n')
+        asm.write('CALL printf\n')
+        asm.write('ADD ESP, 8\n')
 
 class AssigmentNode(Node):
 
-    def evaluate(self, symbol_table):
-        value = self.children[1].evaluate(symbol_table)
+    def evaluate(self, symbol_table, asm):
+        value = self.children[1].evaluate(symbol_table, asm)
         key = self.children[0].value
-        symbol_table.set(key, value)
-        self.children[0].evaluate(symbol_table)
+        symbol_table.set(key, value + (symbol_table.get(key)[2],))
+        asm.write(f'MOV [EBP-{symbol_table.get(key)[2]}], EAX\n')
 
 class BlockNode(Node):
 
-    def evaluate(self, symbol_table):
+    def evaluate(self, symbol_table, asm):
         for child in self.children:
-            child.evaluate(symbol_table)
+            child.evaluate(symbol_table, asm)
 
 class BinOpNode(Node):
 
-    def evaluate(self, symbol_table):
-        eval_children_0 = self.children[0].evaluate(symbol_table)
-        eval_children_1 = self.children[1].evaluate(symbol_table)
+    def evaluate(self, symbol_table, asm):
+        eval_children_1 = self.children[1].evaluate(symbol_table, asm)
+        asm.write(f'PUSH EAX\n')
+        eval_children_0 = self.children[0].evaluate(symbol_table, asm)
+        asm.write(f'POP EBX\n')
         if self.value == '+':
+            asm.write(f'ADD EAX, EBX\n')
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return eval_children_0[0] + eval_children_1[0], 'INT'
         elif self.value == '-':
+            asm.write(f'SUB EAX, EBX\n')
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return eval_children_0[0] - eval_children_1[0], 'INT'
         elif self.value == '*':
+            asm.write(f'IMUL EBX\n')
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return eval_children_0[0] * eval_children_1[0], 'INT'
         elif self.value == '/':
+            asm.write(f'IDIV EBX\n')
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return eval_children_0[0] // eval_children_1[0], 'INT'
         elif self.value == '>':
+            asm.write(f'CMP EAX, EBX\n')
+            # asm.write(f'JG binop_jg\n')
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
             return int(eval_children_0[0] > eval_children_1[0]), 'INT'
         elif self.value == '<':
+            asm.write(f'CMP EAX, EBX\n')
+            # asm.write(f'JL binop_jl\n')
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
             return int(eval_children_0[0] < eval_children_1[0]), 'INT'
         elif self.value == '==':
+            asm.write(f'CMP EAX, EBX\n')
+            # asm.write(f'JE binop_je\n')
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
             return int(eval_children_0[0] == eval_children_1[0]), 'INT'
         elif self.value == 'and':
+            asm.write(f'AND EAX, EBX\n')
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return int(eval_children_0[0] and eval_children_1[0]), 'INT'
         elif self.value == 'or':
+            asm.write(f'OR EAX, EBX\n')
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return int(eval_children_0[0] or eval_children_1[0]), 'INT'
         elif self.value == '..':
@@ -220,25 +249,26 @@ class BinOpNode(Node):
 
 class UnOpNode(Node):
 
-    def evaluate(self, symbol_table):
+    def evaluate(self, symbol_table, asm):
         if self.value == '+':
-            return self.children[0].evaluate(symbol_table)[0], 'INT'
+            return self.children[0].evaluate(symbol_table, asm)[0], 'INT'
         elif self.value == '-':
-            return -self.children[0].evaluate(symbol_table)[0], 'INT'
+            return -self.children[0].evaluate(symbol_table, asm)[0], 'INT'
         elif self.value == 'not':
-            return not self.children[0].evaluate(symbol_table)[0], 'INT'
+            return not self.children[0].evaluate(symbol_table, asm)[0], 'INT'
 
 class IntValNode(Node):
 
-    def evaluate(self, symbol_table):
+    def evaluate(self, symbol_table, asm):
+        asm.write(f'MOV EAX, {self.value}\n')
         return int(self.value), 'INT'
 
 class StringNode(Node):
 
-    def evaluate(self, symbol_table):
+    def evaluate(self, symbol_table, asm):
         return str(self.value), 'STRING'
 
 class NoOpNode(Node):
 
-    def evaluate(self, symbol_table):
+    def evaluate(self, symbol_table, asm):
         pass
