@@ -1,7 +1,7 @@
 import sys
 
 from syntactical import Parser
-from semantic import SymbolTable
+from semantic import SymbolTable, ASM
 
 
 if __name__ == "__main__":
@@ -12,4 +12,6 @@ if __name__ == "__main__":
 
     parser = Parser()
     symbol_table = SymbolTable()
-    parser.run(code).evaluate(symbol_table)
+    asm = ASM(file_name)
+    parser.run(code).evaluate(symbol_table, asm)
+    asm.end()
