@@ -115,15 +115,22 @@ class SymbolTable:
 
 class Node(ABC):
 
+    _id = 0
+
     def __init__(self, value=None):
         self.value = value
         self.children = []
+        self.id = Node._id
+        Node._id += 1
 
     @abstractmethod
     def evaluate():
         pass
 
 class IdentifierNode(Node):
+
+    def __init__(self, value):
+        super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
         value = symbol_table.get(self.value)
@@ -133,21 +140,30 @@ class IdentifierNode(Node):
     
 class ReadNode(Node):
 
+    def __init__(self, value):
+        super().__init__(value)
+
     def evaluate(self, symbol_table, asm):
         asm.write('PUSH scanint\n')
         asm.write('PUSH formatin\n')
         asm.write('CALL scanf\n')
         asm.write('ADD ESP, 8\n')
         asm.write('MOV EAX, DWORD [scanint]\n')
-        return int(input()), 'INT'
+        return 0, 'INT'
 
 class WhileNode(Node):
+
+    def __init__(self, value):
+        super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
         while self.children[0].evaluate(symbol_table, asm)[0]:
             self.children[1].evaluate(symbol_table, asm)
 
 class IfNode(Node):
+
+    def __init__(self, value):
+        super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
         if self.children[0].evaluate(symbol_table, asm)[0]:
@@ -156,6 +172,9 @@ class IfNode(Node):
             self.children[2].evaluate(symbol_table, asm)
 
 class VarDecNode(Node):
+
+    def __init__(self, value):
+        super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
         asm.write(f'PUSH DWORD 0\n')
@@ -167,6 +186,9 @@ class VarDecNode(Node):
 
 class PrintNode(Node):
 
+    def __init__(self, value):
+        super().__init__(value)
+
     def evaluate(self, symbol_table, asm):
         self.children[0].evaluate(symbol_table, asm)[0]
         asm.write('PUSH EAX\n')
@@ -176,6 +198,9 @@ class PrintNode(Node):
 
 class AssigmentNode(Node):
 
+    def __init__(self, value):
+        super().__init__(value)
+
     def evaluate(self, symbol_table, asm):
         value = self.children[1].evaluate(symbol_table, asm)
         key = self.children[0].value
@@ -184,11 +209,17 @@ class AssigmentNode(Node):
 
 class BlockNode(Node):
 
+    def __init__(self, value):
+        super().__init__(value)
+
     def evaluate(self, symbol_table, asm):
         for child in self.children:
             child.evaluate(symbol_table, asm)
 
 class BinOpNode(Node):
+
+    def __init__(self, value):
+        super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
         eval_children_1 = self.children[1].evaluate(symbol_table, asm)
@@ -249,6 +280,9 @@ class BinOpNode(Node):
 
 class UnOpNode(Node):
 
+    def __init__(self, value):
+        super().__init__(value)
+
     def evaluate(self, symbol_table, asm):
         if self.value == '+':
             return self.children[0].evaluate(symbol_table, asm)[0], 'INT'
@@ -259,16 +293,25 @@ class UnOpNode(Node):
 
 class IntValNode(Node):
 
+    def __init__(self, value):
+        super().__init__(value)
+
     def evaluate(self, symbol_table, asm):
         asm.write(f'MOV EAX, {self.value}\n')
         return int(self.value), 'INT'
 
 class StringNode(Node):
 
+    def __init__(self, value):
+        super().__init__(value)
+
     def evaluate(self, symbol_table, asm):
         return str(self.value), 'STRING'
 
 class NoOpNode(Node):
+
+    def __init__(self, value):
+        super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
         pass
