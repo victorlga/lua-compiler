@@ -1,118 +1,5 @@
 from abc import ABC, abstractmethod           
 
-from textwrap import dedent
-
-class ASM:
-
-    initial_code = '''
-        ; constantes
-        SYS_EXIT equ 1
-        SYS_READ equ 3
-        SYS_WRITE equ 4
-        STDIN equ 0
-        STDOUT equ 1
-        True equ 1
-        False equ 0
-
-        segment .data
-
-        formatin: db "%d", 0
-        formatout: db "%d", 10, 0 ; newline, nul terminator
-        scanint: times 4 db 0 ; 32-bits integer = 4 bytes
-
-        segment .bss  ; variaveis
-        res RESB 1
-
-        section .text
-        global main ; linux
-        ;global _main ; windows
-        extern scanf ; linux
-        extern printf ; linux
-        ;extern _scanf ; windows
-        ;extern _printf; windows
-        extern fflush ; linux
-        ;extern _fflush ; windows
-        extern stdout ; linux
-        ;extern _stdout ; windows
-
-        ; subrotinas if/while
-        binop_je:
-        JE binop_true
-        JMP binop_false
-
-        binop_jg:
-        JG binop_true
-        JMP binop_false
-
-        binop_jl:
-        JL binop_true
-        JMP binop_false
-
-        binop_false:
-        MOV EAX, False  
-        JMP binop_exit
-        binop_true:
-        MOV EAX, True
-        binop_exit:
-        RET
-
-        main:
-
-        PUSH EBP ; guarda o base pointer
-        MOV EBP, ESP ; estabelece um novo base pointer
-
-        ; codigo gerado pelo compilador abaixo
-    '''
-
-    final_code = '''
-        ; interrupcao de saida (default)
-
-        PUSH DWORD [stdout]
-        CALL fflush
-        ADD ESP, 4
-
-        MOV ESP, EBP
-        POP EBP
-
-        MOV EAX, 1
-        XOR EBX, EBX
-        INT 0x80        
-    '''
-
-    def __init__(self, filename):
-        self.filename = filename
-        with open(filename, 'w') as file:
-            file.write(dedent(self.initial_code))
-
-    def write(self, code):
-        with open(self.filename, 'a') as file:
-            file.write(dedent(code))
-
-    def end(self):
-        with open(self.filename, 'a') as file:
-            file.write(dedent(self.final_code))
-
-class SymbolTable:
-
-    def __init__(self):
-        self.table = {}
-        self.address = 4
-
-    def create(self, key):
-        if key in self.table:
-            raise RuntimeError(f'Key {key} already created.')
-        self.table[key] = (None, None, self.address)
-        self.address += 4
-
-    def get(self, key):
-        return self.table[key]
-
-    def set(self, key, value):
-        if key in self.table:
-            self.table[key] = value
-        else:
-            raise RuntimeError(f'Key {key} does not exist.')
-
 class Node(ABC):
 
     _id = 0
@@ -129,7 +16,7 @@ class Node(ABC):
 
 class IdentifierNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -140,7 +27,7 @@ class IdentifierNode(Node):
     
 class ReadNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -153,13 +40,14 @@ class ReadNode(Node):
 
 class WhileNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
         asm.write(f'LOOP_{self._id}\n')
         
         self.children[0].evaluate(symbol_table, asm)
+
         asm.write('CMP EAX, False\n')
         asm.write(f'JE EXIT_{self._id}\n')
 
@@ -170,7 +58,7 @@ class WhileNode(Node):
 
 class IfNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -181,7 +69,7 @@ class IfNode(Node):
 
 class VarDecNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -194,7 +82,7 @@ class VarDecNode(Node):
 
 class PrintNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -206,7 +94,7 @@ class PrintNode(Node):
 
 class AssigmentNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -217,7 +105,7 @@ class AssigmentNode(Node):
 
 class BlockNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -226,7 +114,7 @@ class BlockNode(Node):
 
 class BinOpNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -288,7 +176,7 @@ class BinOpNode(Node):
 
 class UnOpNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -301,7 +189,7 @@ class UnOpNode(Node):
 
 class IntValNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -310,7 +198,7 @@ class IntValNode(Node):
 
 class StringNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
@@ -318,7 +206,7 @@ class StringNode(Node):
 
 class NoOpNode(Node):
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
