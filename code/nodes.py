@@ -140,17 +140,17 @@ class BinOpNode(Node):
             return eval_children_0[0] // eval_children_1[0], 'INT'
         elif self.value == '>':
             asm.write(f'CMP EAX, EBX\n')
-            # asm.write(f'JG binop_jg\n')
+            asm.write(f'CALL binop_jg\n')
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
             return int(eval_children_0[0] > eval_children_1[0]), 'INT'
         elif self.value == '<':
             asm.write(f'CMP EAX, EBX\n')
-            # asm.write(f'JL binop_jl\n')
+            asm.write(f'CALL binop_jl\n')
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
             return int(eval_children_0[0] < eval_children_1[0]), 'INT'
         elif self.value == '==':
             asm.write(f'CMP EAX, EBX\n')
-            # asm.write(f'JE binop_je\n')
+            asm.write(f'CALL binop_je\n')
             self._check_data_types_is_equal(eval_children_0, eval_children_1)
             return int(eval_children_0[0] == eval_children_1[0]), 'INT'
         elif self.value == 'and':
