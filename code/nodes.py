@@ -24,7 +24,7 @@ class IdentifierNode(Node):
         address = value[2]
         asm.write(f'MOV EAX, [EBP-{address}]\n')
         return value
-    
+
 class ReadNode(Node):
 
     def __init__(self, value=None):
@@ -44,17 +44,18 @@ class WhileNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
-        asm.write(f'LOOP_{self._id}\n')
+        _id = self.children[0].id
+        asm.write(f'LOOP_{_id}:\n')
         
         self.children[0].evaluate(symbol_table, asm)
 
         asm.write('CMP EAX, False\n')
-        asm.write(f'JE EXIT_{self._id}\n')
+        asm.write(f'JE EXIT_{_id}\n')
 
         self.children[1].evaluate(symbol_table, asm)
 
-        asm.write(f'JMP LOOP_{self._id}\n')
-        asm.write(f'EXIT_{self._id}:\n')
+        asm.write(f'JMP LOOP_{_id}\n')
+        asm.write(f'EXIT_{_id}:\n')
 
 class IfNode(Node):
 
@@ -81,7 +82,9 @@ class VarDecNode(Node):
         symbol_table.create(key)
         if len(self.children) > 1:
             value = self.children[1].evaluate(symbol_table, asm)
-            symbol_table.set(key, value + (symbol_table.get(key)[2],))
+            address = symbol_table.get(key)[2]
+            symbol_table.set(key, value + (address,))
+            asm.write(f'MOV [EBP-{address}], EAX\n')
 
 class PrintNode(Node):
 
