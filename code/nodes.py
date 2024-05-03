@@ -62,9 +62,12 @@ class IfNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
-        if self.children[0].evaluate(symbol_table, asm)[0]:
-            self.children[1].evaluate(symbol_table, asm)
-        else:
+        self.children[0].evaluate(symbol_table, asm)
+        asm.write('CMP EAX, False\n')
+        asm.write(f'JE EXIT_{self._id}\n')
+        self.children[1].evaluate(symbol_table, asm)
+        asm.write(f'EXIT_{self._id}:\n')
+        if len(self.children) > 2:
             self.children[2].evaluate(symbol_table, asm)
 
 class VarDecNode(Node):
