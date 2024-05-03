@@ -78,7 +78,7 @@ class ASM:
     '''
 
     def __init__(self, filename):
-        self.filename = "../" + filename
+        self.filename = filename
         with open(filename, 'w') as file:
             file.write(dedent(self.initial_code))
 
