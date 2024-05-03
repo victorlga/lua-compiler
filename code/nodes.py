@@ -67,9 +67,10 @@ class IfNode(Node):
         asm.write('CMP EAX, False\n')
         asm.write(f'JE EXIT_{self._id}\n')
         self.children[1].evaluate(symbol_table, asm)
+        asm.write(f'JMP EXIT_ELSE_{self._id}\n')
         asm.write(f'EXIT_{self._id}:\n')
-        if len(self.children) > 2:
-            self.children[2].evaluate(symbol_table, asm)
+        self.children[2].evaluate(symbol_table, asm)
+        asm.write(f'EXIT_ELSE_{self._id}:\n')
 
 class VarDecNode(Node):
 

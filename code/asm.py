@@ -74,7 +74,7 @@ class ASM:
 
         MOV EAX, 1
         XOR EBX, EBX
-        INT 0x80        
+        INT 0x80
     '''
 
     def __init__(self, filename):
