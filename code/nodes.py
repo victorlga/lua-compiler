@@ -44,17 +44,17 @@ class WhileNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
-        # asm.write(f'LOOP_{self._id}\n')
+        asm.write(f'LOOP_{self._id}\n')
         
-        # self.children[0].evaluate(symbol_table, asm)
+        self.children[0].evaluate(symbol_table, asm)
 
-        # asm.write('CMP EAX, False\n')
-        # asm.write(f'JE EXIT_{self._id}\n')
+        asm.write('CMP EAX, False\n')
+        asm.write(f'JE EXIT_{self._id}\n')
 
-        # self.children[1].evaluate(symbol_table, asm)
+        self.children[1].evaluate(symbol_table, asm)
 
-        # asm.write(f'JMP LOOP_{self._id}\n')
-        # asm.write(f'EXIT_{self._id}:\n')
+        asm.write(f'JMP LOOP_{self._id}\n')
+        asm.write(f'EXIT_{self._id}:\n')
 
 class IfNode(Node):
 
@@ -135,7 +135,7 @@ class BinOpNode(Node):
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return eval_children_0[0] * eval_children_1[0], 'INT'
         elif self.value == '/':
-            asm.write(f'IDIV EBX\n')
+            asm.write(f'DIV EBX\n')
             self._check_data_type('INT', eval_children_0, eval_children_1)
             return eval_children_0[0] // eval_children_1[0], 'INT'
         elif self.value == '>':
