@@ -44,18 +44,17 @@ class WhileNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table, asm):
-        _id = self.children[0].id
-        asm.write(f'LOOP_{_id}:\n')
+        asm.write(f'LOOP_{self.id}:\n')
         
         self.children[0].evaluate(symbol_table, asm)
 
         asm.write('CMP EAX, False\n')
-        asm.write(f'JE EXIT_{_id}\n')
+        asm.write(f'JE EXIT_{self.id}\n')
 
         self.children[1].evaluate(symbol_table, asm)
 
-        asm.write(f'JMP LOOP_{_id}\n')
-        asm.write(f'EXIT_{_id}:\n')
+        asm.write(f'JMP LOOP_{self.id}\n')
+        asm.write(f'EXIT_{self.id}:\n')
 
 class IfNode(Node):
 
@@ -65,12 +64,12 @@ class IfNode(Node):
     def evaluate(self, symbol_table, asm):
         self.children[0].evaluate(symbol_table, asm)
         asm.write('CMP EAX, False\n')
-        asm.write(f'JE EXIT_{self._id}\n')
+        asm.write(f'JE EXIT_{self.id}\n')
         self.children[1].evaluate(symbol_table, asm)
-        asm.write(f'JMP EXIT_ELSE_{self._id}\n')
-        asm.write(f'EXIT_{self._id}:\n')
+        asm.write(f'JMP EXIT_ELSE_{self.id}\n')
+        asm.write(f'EXIT_{self.id}:\n')
         self.children[2].evaluate(symbol_table, asm)
-        asm.write(f'EXIT_ELSE_{self._id}:\n')
+        asm.write(f'EXIT_ELSE_{self.id}:\n')
 
 class VarDecNode(Node):
 
