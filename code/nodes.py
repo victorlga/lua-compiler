@@ -45,7 +45,7 @@ class WhileNode(Node):
 
     def evaluate(self, symbol_table, asm):
         asm.write(f'LOOP_{self.id}:\n')
-        
+        print(self.children[0])
         self.children[0].evaluate(symbol_table, asm)
 
         asm.write('CMP EAX, False\n')
@@ -63,11 +63,14 @@ class IfNode(Node):
 
     def evaluate(self, symbol_table, asm):
         self.children[0].evaluate(symbol_table, asm)
+
         asm.write('CMP EAX, False\n')
         asm.write(f'JE EXIT_{self.id}\n')
         self.children[1].evaluate(symbol_table, asm)
+
         asm.write(f'JMP EXIT_ELSE_{self.id}\n')
         asm.write(f'EXIT_{self.id}:\n')
+
         self.children[2].evaluate(symbol_table, asm)
         asm.write(f'EXIT_ELSE_{self.id}:\n')
 

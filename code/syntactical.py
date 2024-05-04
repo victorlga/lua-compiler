@@ -1,6 +1,6 @@
-from tokenizer import Tokenizer
-from preprocessing import filter
-from nodes import (
+from .tokenizer import Tokenizer
+from .preprocessing import filter
+from .nodes import (
     BinOpNode, IntValNode, UnOpNode, PrintNode, AssigmentNode, BlockNode,
     IdentifierNode, NoOpNode, ReadNode, IfNode, WhileNode, StringNode,
     VarDecNode

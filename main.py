@@ -1,8 +1,8 @@
 import sys
 
-from syntactical import Parser
-from asm import ASM
-from symboltable import SymbolTable
+from code.syntactical import Parser
+from code.asm import ASM
+from code.symboltable import SymbolTable
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
-local x = 1
-
-if x > 5 then
-	print(2)
+local a = 1
+local b = 2
+if a < b then
+	print(99)
 else
-	print(100)
+	print(11)
 end
