@@ -45,7 +45,7 @@ class WhileNode(Node):
 
     def evaluate(self, symbol_table, asm):
         asm.write(f'LOOP_{self.id}:\n')
-        print(self.children[0])
+
         self.children[0].evaluate(symbol_table, asm)
 
         asm.write('CMP EAX, False\n')
