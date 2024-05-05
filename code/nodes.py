@@ -108,8 +108,12 @@ class AssigmentNode(Node):
 
     def evaluate(self, symbol_table, asm):
         value = self.children[1].evaluate(symbol_table, asm)
+        if len(value) == 2:
+            element, dtype = value
+        else:
+            element, dtype, _ = value
         key = self.children[0].value
-        symbol_table.set(key, value + (symbol_table.get(key)[2],))
+        symbol_table.set(key, (element, dtype,) + (symbol_table.get(key)[2],))
         asm.write(f'MOV [EBP-{symbol_table.get(key)[2]}], EAX\n')
 
 class BlockNode(Node):
