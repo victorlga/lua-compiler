@@ -1,7 +1,7 @@
 import sys
 
-from syntactical import Parser
-from semantic import SymbolTable
+from code.syntactical import Parser
+from code.nodes import SymbolTable
 
 
 if __name__ == "__main__":
