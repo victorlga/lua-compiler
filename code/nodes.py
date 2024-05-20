@@ -60,7 +60,7 @@ class AssigmentNode(Node):
 class BlockNode(Node):
 
     def evaluate(self, symbol_table):
-        
+
         for child in self.children:
             if child.__class__.__name__ == 'ReturnNode':
                 return child.evaluate(symbol_table)
@@ -140,10 +140,8 @@ class FuncCallNode(Node):
         for i in range(1, len(func.children) - 1):
             func.children[i].evaluate(local_symbol_table)
 
-        i = 0
-        for key in local_symbol_table.table:
+        for i, key in enumerate(local_symbol_table.table):
             local_symbol_table.set(key, self.children[i].evaluate(symbol_table))
-            i += 1
         return func.children[-1].evaluate(local_symbol_table)
 
 class ReturnNode(Node):
