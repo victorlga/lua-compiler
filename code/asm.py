@@ -77,15 +77,24 @@ class ASM:
         INT 0x80
     '''
 
-    def __init__(self, filename):
-        self.filename = filename
-        with open(filename, 'w') as file:
-            file.write(dedent(self.initial_code))
+    filename = None
 
-    def write(self, code):
-        with open(self.filename, 'a') as file:
+    @staticmethod
+    def initialize(filename):
+        ASM.filename = filename
+        with open(ASM.filename, 'w') as file:
+            file.write(dedent(ASM.initial_code))
+
+    @staticmethod
+    def write(code):
+        if ASM.filename is None:
+            raise ValueError("Filename is not set. Call initialize() first.")
+        with open(ASM.filename, 'a') as file:
             file.write(dedent(code))
 
-    def end(self):
-        with open(self.filename, 'a') as file:
-            file.write(dedent(self.final_code))
+    @staticmethod
+    def end():
+        if ASM.filename is None:
+            raise ValueError("Filename is not set. Call initialize() first.")
+        with open(ASM.filename, 'a') as file:
+            file.write(dedent(ASM.final_code))
