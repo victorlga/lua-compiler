@@ -39,21 +39,6 @@ class Parser:
 
         token = self.tokenizer.next
 
-        # if token.type == 'IDENTIFIER':
-        #     identifier_node = IdentifierNode(token.value)
-
-        #     self._select_and_check_unexpected_token(True, 'ASSING')
-
-        #     assigment_node = AssigmentNode()
-        #     assigment_node.children.append(identifier_node)
-
-        #     self.tokenizer.select_next()
-        #     bool_expression = self._parse_bool_expression()
-        #     assigment_node.children.append(bool_expression)
-
-        #     self._select_and_check_unexpected_token(False, 'NEWLINE')
-        #     return assigment_node
-
         if token.type == 'IDENTIFIER':
 
             self.tokenizer.select_next()

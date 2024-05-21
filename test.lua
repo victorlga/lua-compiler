@@ -1,4 +1,3 @@
-
 function test(a, b)
 	return a + b
 end
@@ -8,4 +7,3 @@ a = test(0, 1)
 
 
 print(a)
-
