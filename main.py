@@ -2,7 +2,7 @@ import sys
 
 from code.syntactical import Parser
 from code.asm import ASM
-from code.symboltable import SymbolTable
+from code.table import SymbolTable
 
 
 if __name__ == "__main__":

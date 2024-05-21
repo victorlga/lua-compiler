@@ -13,18 +13,20 @@ class Tokenizer:
         self.position: int = 0
         self.next: Token = None
         self.reserved_words_types = {
-            'print' : 'PRINT',
-            'and'   : 'AND',
-            'or'    : 'OR',
-            'not'   : 'NOT',
-            'read'  : 'READ',
-            'if'    : 'IF',
-            'then'  : 'THEN',
-            'else'  : 'ELSE',
-            'while' : 'WHILE',
-            'do'    : 'DO',
-            'end'   : 'END',
-            'local' : 'LOCAL',
+            'print'     : 'PRINT',
+            'and'       : 'AND',
+            'or'        : 'OR',
+            'not'       : 'NOT',
+            'read'      : 'READ',
+            'if'        : 'IF',
+            'then'      : 'THEN',
+            'else'      : 'ELSE',
+            'while'     : 'WHILE',
+            'do'        : 'DO',
+            'end'       : 'END',
+            'local'     : 'LOCAL',
+            'function'  : 'FUNCTION',
+            'return'    : 'RETURN',
         }
 
     def select_next(self):
@@ -38,6 +40,8 @@ class Tokenizer:
             ctype = 'EOF'
         elif value == '\n':
             ctype = 'NEWLINE'
+        elif value == ',':
+            ctype = 'COMMA'
         elif value == '(':
             ctype = 'OPEN_PAR'
         elif value == ')':

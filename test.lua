@@ -1,7 +1,9 @@
-local a = 1
-local b = 2
-if a < b then
-	print(99)
-else
-	print(11)
+function test(a, b)
+	return a + b
 end
+
+local a
+a = test(0, 1)
+
+
+print(a)

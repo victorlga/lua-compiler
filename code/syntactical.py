@@ -3,7 +3,7 @@ from .preprocessing import filter
 from .nodes import (
     BinOpNode, IntValNode, UnOpNode, PrintNode, AssigmentNode, BlockNode,
     IdentifierNode, NoOpNode, ReadNode, IfNode, WhileNode, StringNode,
-    VarDecNode
+    VarDecNode, ReturnNode, FuncDecNode, FuncCallNode
 )
 
 class Parser:
@@ -40,19 +40,33 @@ class Parser:
         token = self.tokenizer.next
 
         if token.type == 'IDENTIFIER':
-            identifier_node = IdentifierNode(token.value)
-
-            self._select_and_check_unexpected_token(True, 'ASSING')
-
-            assigment_node = AssigmentNode()
-            assigment_node.children.append(identifier_node)
 
             self.tokenizer.select_next()
-            bool_expression = self._parse_bool_expression()
-            assigment_node.children.append(bool_expression)
+            if self.tokenizer.next.type == 'ASSING':
+                identifier_node = IdentifierNode(token.value)
+                assigment_node = AssigmentNode()
+                assigment_node.children.append(identifier_node)
 
-            self._select_and_check_unexpected_token(False, 'NEWLINE')
-            return assigment_node
+                self.tokenizer.select_next()
+                bool_expression = self._parse_bool_expression()
+                assigment_node.children.append(bool_expression)
+
+                self._select_and_check_unexpected_token(False, 'NEWLINE')
+                return assigment_node
+            elif self.tokenizer.next.type == 'OPEN_PAR':
+                func_call_node = FuncCallNode(token.value)
+                self.tokenizer.select_next()
+                while self.tokenizer.next.type != 'CLOSE_PAR':
+                    bool_expression = self._parse_bool_expression()
+                    func_call_node.children.append(bool_expression)
+                    if self.tokenizer.next.type == 'COMMA':
+                        self.tokenizer.select_next()
+
+                self._select_and_check_unexpected_token(True, 'NEWLINE')
+
+                return func_call_node
+            else:
+                raise ValueError(f'Unexpected token: {self.tokenizer.next.type}')
 
         elif token.type == 'LOCAL':
             var_dec_node = VarDecNode()
@@ -70,6 +84,49 @@ class Parser:
             
             self._select_and_check_unexpected_token(False, 'NEWLINE')
             return var_dec_node
+
+        elif token.type == 'FUNCTION':
+            func_dec_node = FuncDecNode()
+
+            self._select_and_check_unexpected_token(True, 'IDENTIFIER')
+
+            identifier_node = IdentifierNode(self.tokenizer.next.value)
+            func_dec_node.children.append(identifier_node)
+
+            self._select_and_check_unexpected_token(True, 'OPEN_PAR')
+
+            self.tokenizer.select_next()
+            while self.tokenizer.next.type == 'IDENTIFIER':
+                identifier_node = IdentifierNode(self.tokenizer.next.value)
+                var_dec_node = VarDecNode()
+                var_dec_node.children.append(identifier_node)
+                func_dec_node.children.append(var_dec_node)
+                self.tokenizer.select_next()
+                if self.tokenizer.next.type == 'COMMA':
+                    self.tokenizer.select_next()
+            
+            self._select_and_check_unexpected_token(False, 'CLOSE_PAR')
+            self._select_and_check_unexpected_token(True, 'NEWLINE')
+
+            block_node = BlockNode()
+
+            self.tokenizer.select_next()
+            while self.tokenizer.next.type != 'END':
+                statement = self._parse_statement()
+                block_node.children.append(statement)
+                self.tokenizer.select_next()
+
+            func_dec_node.children.append(block_node)
+
+            return func_dec_node
+
+        elif token.type == 'RETURN':
+            ret_node = ReturnNode()
+            self.tokenizer.select_next()
+            bool_expression = self._parse_bool_expression()
+            ret_node.children.append(bool_expression)
+            self._select_and_check_unexpected_token(False, 'NEWLINE')
+            return ret_node
 
         elif token.type == 'PRINT':
             print_node = PrintNode()
@@ -186,7 +243,18 @@ class Parser:
 
         if token.type == 'IDENTIFIER':
             self.tokenizer.select_next()
-            return IdentifierNode(token.value)
+            if self.tokenizer.next.type == 'OPEN_PAR':
+                func_call_node = FuncCallNode(token.value)
+                self.tokenizer.select_next()
+                while self.tokenizer.next.type != 'CLOSE_PAR':
+                    bool_expression = self._parse_bool_expression()
+                    func_call_node.children.append(bool_expression)
+                    if self.tokenizer.next.type == 'COMMA':
+                        self.tokenizer.select_next()
+                self.tokenizer.select_next()
+                return func_call_node
+            else:
+                return IdentifierNode(token.value)
         elif token.type == 'STRING':
             self.tokenizer.select_next()
             return StringNode(token.value)
