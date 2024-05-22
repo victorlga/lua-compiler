@@ -22,11 +22,9 @@ class IdentifierNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
-        value = symbol_table.get(self.value)
-        address = value[2]
+        address = symbol_table.get(self.value)
         asm_code = f'MOV EAX, [EBP-{abs(address)}]\n' if address > 0 else f'MOV EAX, [EBP+{abs(address)}]\n'
         ASM.write(asm_code)
-        return value
 
 class ReadNode(Node):
 
@@ -39,7 +37,6 @@ class ReadNode(Node):
         ASM.write('CALL scanf\n')
         ASM.write('ADD ESP, 8\n')
         ASM.write('MOV EAX, DWORD [scanint]\n')
-        return 0, 'INT'
 
 class WhileNode(Node):
 
@@ -87,10 +84,8 @@ class VarDecNode(Node):
         key = self.children[0].value
         symbol_table.create(key)
         if len(self.children) > 1:
-            value = self.children[1].evaluate(symbol_table)
-            address = symbol_table.get(key)[2]
-            print(symbol_table.table, key, value)
-            symbol_table.set(key, value + (address,))
+            self.children[1].evaluate(symbol_table)
+            address = symbol_table.get(key)
             ASM.write(f'MOV [EBP-{address}], EAX\n')
 
 class PrintNode(Node):
@@ -111,14 +106,9 @@ class AssigmentNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
-        value = self.children[1].evaluate(symbol_table)
-        if len(value) == 2:
-            element, dtype = value
-        else:
-            element, dtype, _ = value
+        self.children[1].evaluate(symbol_table)
         key = self.children[0].value
-        symbol_table.set(key, (element, dtype,) + (symbol_table.get(key)[2],))
-        address = symbol_table.get(key)[2]
+        address = symbol_table.get(key)
         asm_code = f'MOV [EBP-{abs(address)}], EAX\n' if address > 0 else f'MOV [EBP+{abs(address)}], EAX\n'
         ASM.write(asm_code)
 
@@ -129,9 +119,6 @@ class BlockNode(Node):
 
     def evaluate(self, symbol_table):
         for child in self.children:
-            print(child.__class__.__name__)
-            if child.__class__.__name__ == 'ReturnNode':
-                return child.evaluate(symbol_table)
             child.evaluate(symbol_table)
 
 class BinOpNode(Node):
@@ -146,37 +133,28 @@ class BinOpNode(Node):
         ASM.write(f'POP EBX\n')
         if self.value == '+':
             ASM.write(f'ADD EAX, EBX\n')
-            return 0, 'INT'
         elif self.value == '-':
             ASM.write(f'SUB EAX, EBX\n')
-            return 0, 'INT'
         elif self.value == '*':
             ASM.write(f'IMUL EBX\n')
-            return 0, 'INT'
         elif self.value == '/':
             ASM.write(f'DIV EBX\n')
-            return 0, 'INT'
         elif self.value == '>':
             ASM.write(f'CMP EAX, EBX\n')
             ASM.write(f'CALL binop_jg\n')
-            return 0, 'INT'
         elif self.value == '<':
             ASM.write(f'CMP EAX, EBX\n')
             ASM.write(f'CALL binop_jl\n')
-            return 0, 'INT'
         elif self.value == '==':
             ASM.write(f'CMP EAX, EBX\n')
             ASM.write(f'CALL binop_je\n')
-            return 0, 'INT'
         elif self.value == 'and':
             ASM.write(f'AND EAX, EBX\n')
-            return 0, 'INT'
         elif self.value == 'or':
             ASM.write(f'OR EAX, EBX\n')
-            return 0, 'INT'
         elif self.value == '..':
-            # code removed
-            return 0, 'STRING'
+            # Operator .. ASM code generation not implemented
+            pass
 
 class UnOpNode(Node):
 
@@ -184,6 +162,7 @@ class UnOpNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
+        # This node does not do ASM code generation
         if self.value == '+':
             return self.children[0].evaluate(symbol_table)[0], 'INT'
         elif self.value == '-':
@@ -198,7 +177,6 @@ class IntValNode(Node):
 
     def evaluate(self, symbol_table):
         ASM.write(f'MOV EAX, {self.value}\n')
-        return int(self.value), 'INT'
 
 class FuncDecNode(Node):
 
@@ -215,7 +193,7 @@ class FuncDecNode(Node):
         local_symbol_table = SymbolTable()
         for i in range(1, len(self.children) - 1):
             key = self.children[i].children[0].value
-            local_symbol_table.create(key, shift_value=4, signal=-1)
+            local_symbol_table.create(key, shift=4, signal=-1)
 
         self.children[-1].evaluate(local_symbol_table)
 
@@ -256,6 +234,7 @@ class StringNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
+        # This node does not do ASM code generation
         return str(self.value), 'STRING'
 
 class NoOpNode(Node):
