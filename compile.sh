@@ -18,4 +18,4 @@ gcc -m32 -no-pie -o "$filename" "$filename.o"
 ./"$filename"
 
 # Remove temporary files
-rm "$filename.o" "$filename" "$filename.asm"
+# rm "$filename.o" "$filename" "$filename.asm"
