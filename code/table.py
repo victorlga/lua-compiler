@@ -4,10 +4,10 @@ class SymbolTable:
         self.table = {}
         self.address = 4
 
-    def create(self, key):
+    def create(self, key, shift_value=0, signal=1):
         if key in self.table:
             raise RuntimeError(f'Key {key} already created.')
-        self.table[key] = (None, None, self.address)
+        self.table[key] = (None, None, (self.address + shift_value) * signal)
         self.address += 4
 
     def get(self, key):

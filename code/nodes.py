@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from .table import SymbolTable, FuncTable         
+from .table import SymbolTable, FuncTable
 from code.asm import ASM
 
 class Node(ABC):
@@ -24,7 +24,8 @@ class IdentifierNode(Node):
     def evaluate(self, symbol_table):
         value = symbol_table.get(self.value)
         address = value[2]
-        ASM.write(f'MOV EAX, [EBP-{address}]\n')
+        asm_code = f'MOV EAX, [EBP-{abs(address)}]\n' if address > 0 else f'MOV EAX, [EBP+{abs(address)}]\n'
+        ASM.write(asm_code)
         return value
 
 class ReadNode(Node):
@@ -88,6 +89,7 @@ class VarDecNode(Node):
         if len(self.children) > 1:
             value = self.children[1].evaluate(symbol_table)
             address = symbol_table.get(key)[2]
+            print(symbol_table.table, key, value)
             symbol_table.set(key, value + (address,))
             ASM.write(f'MOV [EBP-{address}], EAX\n')
 
@@ -97,7 +99,7 @@ class PrintNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
-        self.children[0].evaluate(symbol_table)[0]
+        self.children[0].evaluate(symbol_table)
         ASM.write('PUSH EAX\n')
         ASM.write('PUSH formatout\n')
         ASM.write('CALL printf\n')
@@ -116,7 +118,9 @@ class AssigmentNode(Node):
             element, dtype, _ = value
         key = self.children[0].value
         symbol_table.set(key, (element, dtype,) + (symbol_table.get(key)[2],))
-        ASM.write(f'MOV [EBP-{symbol_table.get(key)[2]}], EAX\n')
+        address = symbol_table.get(key)[2]
+        asm_code = f'MOV [EBP-{abs(address)}], EAX\n' if address > 0 else f'MOV [EBP+{abs(address)}], EAX\n'
+        ASM.write(asm_code)
 
 class BlockNode(Node):
 
@@ -125,70 +129,54 @@ class BlockNode(Node):
 
     def evaluate(self, symbol_table):
         for child in self.children:
+            print(child.__class__.__name__)
             if child.__class__.__name__ == 'ReturnNode':
                 return child.evaluate(symbol_table)
-            child.evaluate(symbol_table)  
-          
+            child.evaluate(symbol_table)
+
 class BinOpNode(Node):
 
     def __init__(self, value=None):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
-        eval_children_1 = self.children[1].evaluate(symbol_table)
+        self.children[1].evaluate(symbol_table)
         ASM.write(f'PUSH EAX\n')
-        eval_children_0 = self.children[0].evaluate(symbol_table)
+        self.children[0].evaluate(symbol_table)
         ASM.write(f'POP EBX\n')
         if self.value == '+':
             ASM.write(f'ADD EAX, EBX\n')
-            self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0[0] + eval_children_1[0], 'INT'
+            return 0, 'INT'
         elif self.value == '-':
             ASM.write(f'SUB EAX, EBX\n')
-            self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0[0] - eval_children_1[0], 'INT'
+            return 0, 'INT'
         elif self.value == '*':
             ASM.write(f'IMUL EBX\n')
-            self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0[0] * eval_children_1[0], 'INT'
+            return 0, 'INT'
         elif self.value == '/':
             ASM.write(f'DIV EBX\n')
-            self._check_data_type('INT', eval_children_0, eval_children_1)
-            return eval_children_0[0] // eval_children_1[0], 'INT'
+            return 0, 'INT'
         elif self.value == '>':
             ASM.write(f'CMP EAX, EBX\n')
             ASM.write(f'CALL binop_jg\n')
-            self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return int(eval_children_0[0] > eval_children_1[0]), 'INT'
+            return 0, 'INT'
         elif self.value == '<':
             ASM.write(f'CMP EAX, EBX\n')
             ASM.write(f'CALL binop_jl\n')
-            self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return int(eval_children_0[0] < eval_children_1[0]), 'INT'
+            return 0, 'INT'
         elif self.value == '==':
             ASM.write(f'CMP EAX, EBX\n')
             ASM.write(f'CALL binop_je\n')
-            self._check_data_types_is_equal(eval_children_0, eval_children_1)
-            return int(eval_children_0[0] == eval_children_1[0]), 'INT'
+            return 0, 'INT'
         elif self.value == 'and':
             ASM.write(f'AND EAX, EBX\n')
-            self._check_data_type('INT', eval_children_0, eval_children_1)
-            return int(eval_children_0[0] and eval_children_1[0]), 'INT'
+            return 0, 'INT'
         elif self.value == 'or':
             ASM.write(f'OR EAX, EBX\n')
-            self._check_data_type('INT', eval_children_0, eval_children_1)
-            return int(eval_children_0[0] or eval_children_1[0]), 'INT'
+            return 0, 'INT'
         elif self.value == '..':
-            self._check_data_type(['INT', 'STRING'], eval_children_0, eval_children_1)
-            return str(eval_children_0[0]) + str(eval_children_1[0]), 'STRING'
-
-    def _check_data_type(self, data_type, eval_chil_0, eval_chil_1):
-        if eval_chil_0[1] not in data_type or eval_chil_1[1] not in data_type:
-                raise TypeError(f'"{self.value}" operator is only allowed with ' + data_type + ' data.')
-
-    def _check_data_types_is_equal(self, eval_chil_0, eval_chil_1):
-        if eval_chil_0[1] != eval_chil_1[1]:
-            raise TypeError(f'"{self.value}" operator can\'t be used between data with different types.')
+            # code removed
+            return 0, 'STRING'
 
 class UnOpNode(Node):
 
@@ -218,10 +206,24 @@ class FuncDecNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
-        if self.children[0].value in FuncTable.table:
-            raise RuntimeError(f'Function {self.children[0].value} already declared.')
+        ASM.write(f'JMP END_FUNC_{self.children[0].value}\n')
 
-        FuncTable.set(self.children[0].value, self)
+        ASM.write(f'{self.children[0].value}:\n')
+        ASM.write(f'PUSH EBP\n')
+        ASM.write(f'MOV EBP, ESP\n')
+
+        local_symbol_table = SymbolTable()
+        for i in range(1, len(self.children) - 1):
+            key = self.children[i].children[0].value
+            local_symbol_table.create(key, shift_value=4, signal=-1)
+
+        self.children[-1].evaluate(local_symbol_table)
+
+        ASM.write('MOV ESP, EBP\n')
+        ASM.write('POP EBP\n')
+        ASM.write('RET\n')
+
+        ASM.write(f'END_FUNC_{self.children[0].value}:\n')
 
 class FuncCallNode(Node):
 
@@ -230,20 +232,12 @@ class FuncCallNode(Node):
 
     def evaluate(self, symbol_table):
 
-        if self.value not in FuncTable.table:
-            raise RuntimeError(f'Function {self.value} not declared.')
+        for i in range(len(self.children)-1, -1, -1):
+            self.children[i].evaluate(symbol_table)
+            ASM.write('PUSH EAX\n')
 
-        func = FuncTable.get(self.value)
-        if len(func.children) - 2 != len(self.children):
-            raise RuntimeError(f'Function {self.value} expects {len(func.children) - 2} arguments, {len(self.children)} given.')
-
-        local_symbol_table = SymbolTable()
-        for i in range(1, len(func.children) - 1):
-            func.children[i].evaluate(local_symbol_table)
-
-        for i, key in enumerate(local_symbol_table.table):
-            local_symbol_table.set(key, self.children[i].evaluate(symbol_table))
-        return func.children[-1].evaluate(local_symbol_table)
+        ASM.write(f'CALL {self.value}\n')
+        ASM.write(f'ADD ESP, {4 * len(self.children)}\n')
 
 class ReturnNode(Node):
 
@@ -251,7 +245,10 @@ class ReturnNode(Node):
             super().__init__(value)
 
         def evaluate(self, symbol_table):
-            return self.children[0].evaluate(symbol_table)
+            self.children[0].evaluate(symbol_table)
+            ASM.write('MOV ESP, EBP\n')
+            ASM.write('POP EBP\n')
+            ASM.write(f'RET\n')
 
 class StringNode(Node):
 
