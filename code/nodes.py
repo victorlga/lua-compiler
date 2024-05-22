@@ -184,6 +184,7 @@ class FuncDecNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
+        FuncTable.set(self.children[0].value, self)
         ASM.write(f'JMP END_FUNC_{self.children[0].value}\n')
 
         ASM.write(f'{self.children[0].value}:\n')
@@ -209,6 +210,10 @@ class FuncCallNode(Node):
         super().__init__(value)
 
     def evaluate(self, symbol_table):
+
+        func = FuncTable.get(self.value)
+        if len(func.children) - 2 != len(self.children):
+            raise RuntimeError(f'Function {self.value} expects {len(func.children) - 2} arguments, {len(self.children)} given.')
 
         for i in range(len(self.children)-1, -1, -1):
             self.children[i].evaluate(symbol_table)
