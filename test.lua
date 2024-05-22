@@ -1,9 +1,12 @@
-function test(a, b)
-	return a + b
+function factorial(n)
+    if n == 0 then
+        return 1
+    else
+        return n * factorial(n - 1)
+    end
 end
 
 local a
-a = test(0, 1)
+a = 5
 
-
-print(a)
+print(factorial(a)) -- 120
