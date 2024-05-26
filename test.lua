@@ -4,7 +4,6 @@ function factorial(n)
     else
         return n * factorial(n - 1)
     end
-end
 
 local a
 a = 5
