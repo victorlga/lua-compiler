@@ -86,7 +86,8 @@ class VarDecNode(Node):
         if len(self.children) > 1:
             self.children[1].evaluate(symbol_table)
             address = symbol_table.get(key)
-            ASM.write(f'MOV [EBP-{address}], EAX\n')
+            asm_code = f'MOV [EBP-{abs(address)}], EAX\n' if address > 0 else f'MOV [EBP+{abs(address)}], EAX\n'
+            ASM.write(asm_code)
 
 class PrintNode(Node):
 
