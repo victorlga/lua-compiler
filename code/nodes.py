@@ -195,7 +195,7 @@ class FuncDecNode(Node):
         local_symbol_table = SymbolTable()
         for i in range(1, len(self.children) - 1):
             key = self.children[i].children[0].value
-            local_symbol_table.create(key, shift=4, signal=-1)
+            local_symbol_table.create(key, shift=4, sign=-1)
 
         self.children[-1].evaluate(local_symbol_table)
 
